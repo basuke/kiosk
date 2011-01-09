@@ -54,7 +54,7 @@ class Kiosk_DB_Table {
 	}
 	
 	function &createQuery() {
-		$query =& new Kiosk_Data_Query();
+		$query =& new Kiosk_Data_Source_DB_Query();
 		
 		$query->setTable($this->name);
 		$query->setDatabase($this->db);

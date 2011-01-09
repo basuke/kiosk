@@ -5,7 +5,7 @@ require_once 'Kiosk.php';
 class Kiosk_Data_Query_TestCase extends UnitTestCase {
 	function setUp() {
 		Kiosk_reset();
-		$this->query =& new Kiosk_Data_Query();
+		$this->query =& new Kiosk_Data_Source_DB_Query();
 	}
 	
 	function assertConditionCases($cases, $show=false) {

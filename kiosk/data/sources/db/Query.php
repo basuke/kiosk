@@ -1,10 +1,11 @@
 <?php
 
+require_once KIOSK_LIB_DIR. '/data/Query.php';
 require_once KIOSK_LIB_DIR. '/data/sources/db/SQL.php';
 require_once KIOSK_LIB_DIR. '/utils/array.php';
 require_once KIOSK_LIB_DIR. '/utils/sql.php';
 
-class Kiosk_Data_Query {
+class Kiosk_Data_Source_DB_Query extends Kiosk_Data_Query {
 	var $db;
 	var $language;
 	
@@ -18,10 +19,6 @@ class Kiosk_Data_Query {
 	var $order = null;
 	var $limit = 0;
 	var $offset = 0;
-	
-	function Kiosk_Data_Query() {
-		$this->__construct();
-	}
 	
 	function __construct() {
 		$this->language = new Kiosk_Data_DB_SQL();
@@ -247,7 +244,7 @@ class Kiosk_Data_Query {
 	}
 }
 
-class Kiosk_Data_SchemaQuery extends Kiosk_Data_Query {
+class Kiosk_Data_SchemaQuery extends Kiosk_Data_Source_DB_Query {
 	var $schema;
 
 	// parsed

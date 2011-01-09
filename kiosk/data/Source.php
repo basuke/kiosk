@@ -4,6 +4,10 @@
 	Base class for data source handler.
 */
 
+require_once KIOSK_LIB_DIR. '/data/Query.php';
+require_once KIOSK_LIB_DIR. '/data/Schema.php';
+require_once KIOSK_LIB_DIR. '/data/Association.php';
+
 class Kiosk_Data_Source {
 	/*
 		Open source with specified configuration, and return instance.

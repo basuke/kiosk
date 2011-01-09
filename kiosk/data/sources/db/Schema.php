@@ -1,12 +1,13 @@
 <?php
 
+require_once KIOSK_LIB_DIR. '/data/Schema.php';
 require_once KIOSK_LIB_DIR. '/data/sources/db/Query.php';
 require_once KIOSK_LIB_DIR. '/data/sources/db/Association.php';
 
 define('Kiosk_INCLUDE_PRIMARY_KEYS', false);
 define('Kiosk_WITHOUT_PRIMARY_KEYS', true);
 
-class Kiosk_Schema {
+class Kiosk_Schema extends Kiosk_Data_Schema {
 	var $class;		// クラス名
 	var $name;		// テーブル名
 	var $table;		// テーブルオブジェクト
