@@ -2,7 +2,7 @@
 
 require_once KIOSK_LIB_DIR. '/utils/sql.php';
 require_once KIOSK_LIB_DIR. '/utils/array.php';
-require_once KIOSK_LIB_DIR. '/data/Query.php';
+require_once KIOSK_LIB_DIR. '/data/sources/db/Query.php';
 
 class Kiosk_DB_Table {
 	var $db;

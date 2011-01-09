@@ -1,7 +1,7 @@
 <?php
 
-require_once KIOSK_LIB_DIR. '/data/Query.php';
-require_once KIOSK_LIB_DIR. '/data/Association.php';
+require_once KIOSK_LIB_DIR. '/data/sources/db/Query.php';
+require_once KIOSK_LIB_DIR. '/data/sources/db/Association.php';
 
 define('Kiosk_INCLUDE_PRIMARY_KEYS', false);
 define('Kiosk_WITHOUT_PRIMARY_KEYS', true);

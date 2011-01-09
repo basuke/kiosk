@@ -1,6 +1,7 @@
 <?php
 
 require_once KIOSK_LIB_DIR. '/data/Source.php';
+require_once KIOSK_LIB_DIR. '/data/sources/db/Schema.php';
 
 class Kiosk_Data_Source_DB extends Kiosk_Data_Source {
 	/* static */

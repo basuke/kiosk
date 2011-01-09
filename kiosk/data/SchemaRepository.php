@@ -1,7 +1,5 @@
 <?php
 
-require_once KIOSK_LIB_DIR. '/data/Schema.php';
-
 class Kiosk_SchemaRepository {
 	var $_schemas = array();
 	
