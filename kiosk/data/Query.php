@@ -1,8 +1,8 @@
 <?php
 
-require_once 'kiosk/data/sources/db/SQL.php';
-require_once 'kiosk/utils/array.php';
-require_once 'kiosk/utils/sql.php';
+require_once KIOSK_LIB_DIR. '/data/sources/db/SQL.php';
+require_once KIOSK_LIB_DIR. '/utils/array.php';
+require_once KIOSK_LIB_DIR. '/utils/sql.php';
 
 class Kiosk_Data_Query {
 	var $db;

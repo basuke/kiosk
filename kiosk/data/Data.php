@@ -45,32 +45,28 @@ class Kiosk_Data {
 		eval($code);
 	}
 	
+	function &_openSource($config) {
+		return Kiosk_Data_Source_DB::openSource($config);
+	}
+	
 	function &source($name, $config=null) {
 		$source = null;
 		
 		if (is_null($config)) {
+			assert('$name');
+			
 			if (isset($this->_sources[$name])) {
 				$source =& $this->_sources[$name];
 			}
 		} else {
-			if (is_string($config)) {
-				$driver = $config;
-				$config = array();
-			} else {
-				$driver = $config['driver'];
-				unset($config['driver']);
-			}
+			$source =& $this->_openSource($config);
 			
-			if (!$driver) {
-				return trigger_error(KIOSK_ERROR_CONFIG. 'no source driver specified');
+			if ($name) {
+				if (isset($this->_sources[$name])) {
+					unset($this->_sources[$name]);
+				}
+				$this->_sources[$name] =& $source;
 			}
-			
-			$source =& Kiosk_DB_factory($driver, $config);
-			
-			if (isset($this->_sources[$name])) {
-				unset($this->_sources[$name]);
-			}
-			$this->_sources[$name] =& $source;
 		}
 		
 		return $source;
