@@ -1,6 +1,6 @@
 <?php
 
-require_once 'kiosk/utils/type.php';
+require_once KIOSK_LIB_DIR. '/utils/type.php';
 
 /*
 	純粋な配列かどうか調べる

@@ -1,6 +1,6 @@
 <?php
 
-require_once 'kiosk/utils/magic.php';
+require_once KIOSK_LIB_DIR. '/utils/magic.php';
 
 // PHP 4用のKioskのインターフェース
 

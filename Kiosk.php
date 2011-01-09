@@ -1,5 +1,8 @@
 <?php
 
+define('KIOSK_HOME', dirname(__FILE__));
+define('KIOSK_LIB_DIR', KIOSK_HOME. '/kiosk');
+
 define('KIOSK_ERROR_CONFIG', 'KIOSK:CONFIG:');
 define('KIOSK_ERROR_SYNTAX', 'KIOSK:SYNTAX:');
 define('KIOSK_ERROR_RUNTIME', 'KIOSK:RUNTIME:');
@@ -11,9 +14,9 @@ define('KIOSK_PHP_4', !KIOSK_PHP_5);
 define('KIOSK_HAS_REAL_CLASS', KIOSK_PHP_5_3);
 define('KIOSK_HAS_EXCEPTION', KIOSK_PHP_5);
 
-require_once 'kiosk/data/Object.php';
-require_once 'kiosk/Callable.php';
-require_once 'kiosk/Backend.php';
+require_once KIOSK_LIB_DIR. '/data/Object.php';
+require_once KIOSK_LIB_DIR. '/Callable.php';
+require_once KIOSK_LIB_DIR. '/Backend.php';
 
 class Kiosk extends KioskObject {
 	/*

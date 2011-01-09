@@ -58,14 +58,14 @@ function file_explicitly_specified($file) {
 	return false;
 }
 
-require_once 'Kiosk.php';
-require_once 'kiosk/utils/console.php';
+require_once dirname(__FILE__). '/Kiosk.php';
+require_once dirname(__FILE__). '/kiosk/utils/console.php';
 
 function &open_test_database() {
 	$db =& Kiosk::database('sqlite');
 	
 	if (defined('SHOWSQL')) {
-		require_once 'kiosk/Logger.php';
+		require_once dirname(__FILE__). '/kiosk/Logger.php';
 		$db->setLogger(new Kiosk_Logger());
 	}
 	

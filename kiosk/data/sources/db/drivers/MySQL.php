@@ -1,6 +1,6 @@
 <?php
 
-require_once dirname(dirname(__FILE__)). '/Driver.php';
+require_once KIOSK_LIB_DIR. '/data/sources/db/Driver.php';
 
 class Kiosk_DB_Driver_MySQL extends Kiosk_DB_Driver {
 	var $_types = array(

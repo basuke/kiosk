@@ -1,7 +1,7 @@
 <?php
 
-require_once dirname(__FILE__). '/Table.php';
-require_once dirname(__FILE__). '/SQL.php';
+require_once KIOSK_LIB_DIR. '/data/sources/db/Table.php';
+require_once KIOSK_LIB_DIR. '/data/sources/db/SQL.php';
 
 class Kiosk_DB_Driver {
 	var $conn;

@@ -1,7 +1,7 @@
 <?php
 
 require_once dirname(__FILE__). '/object/CRUD.php';
-require_once dirname(__FILE__). '/DB.php';
+require_once dirname(__FILE__). '/sources/DB.php';
 
 if (KIOSK_HAS_REAL_CLASS) {
 	require_once dirname(__FILE__). '/object/crud/Concrete_php5.php';

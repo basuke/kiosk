@@ -1,7 +1,7 @@
 <?php
 
-require_once dirname(__FILE__). '/Query.php';
-require_once dirname(__FILE__). '/Association.php';
+require_once KIOSK_LIB_DIR. '/data/Query.php';
+require_once KIOSK_LIB_DIR. '/data/Association.php';
 
 define('Kiosk_INCLUDE_PRIMARY_KEYS', false);
 define('Kiosk_WITHOUT_PRIMARY_KEYS', true);

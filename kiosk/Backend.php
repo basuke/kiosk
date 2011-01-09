@@ -1,6 +1,6 @@
 <?php
 
-require_once dirname(__FILE__). '/data/Data.php';
+require_once KIOSK_LIB_DIR. '/data/Data.php';
 
 /*
 

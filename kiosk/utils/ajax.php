@@ -1,7 +1,7 @@
 <?php
 
 require_once 'JSON.php';
-require_once 'kiosk/utils/http.php';
+require_once KIOSK_LIB_DIR. '/utils/http.php';
 
 $json = new Services_JSON();
 

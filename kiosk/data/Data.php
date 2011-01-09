@@ -1,7 +1,7 @@
 <?php
 
-require_once dirname(__FILE__). '/SchemaRepository.php';
-require_once dirname(__FILE__). '/Namer.php';
+require_once KIOSK_LIB_DIR. '/data/SchemaRepository.php';
+require_once KIOSK_LIB_DIR. '/data/Namer.php';
 
 class Kiosk_Data {
 	var $_repository;

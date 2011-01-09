@@ -1,6 +1,6 @@
 <?php
 
-require_once 'kiosk/data/db/SQL.php';
+require_once 'kiosk/data/sources/db/SQL.php';
 
 class DBSqlBuildTestCase extends UnitTestCase {
 	function testLiterals() {

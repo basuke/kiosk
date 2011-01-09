@@ -1,6 +1,6 @@
 <?php
 
-require_once 'kiosk/utils/url.php';
+require_once KIOSK_LIB_DIR. '/utils/url.php';
 require_once 'HTTP/Request.php';
 
 /*
