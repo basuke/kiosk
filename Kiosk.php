@@ -17,6 +17,7 @@ define('KIOSK_HAS_EXCEPTION', KIOSK_PHP_5);
 require_once KIOSK_LIB_DIR. '/data/Object.php';
 require_once KIOSK_LIB_DIR. '/Callable.php';
 require_once KIOSK_LIB_DIR. '/Backend.php';
+require_once KIOSK_LIB_DIR. '/Namer.php';
 
 class Kiosk extends KioskObject {
 	/*
@@ -30,6 +31,12 @@ class Kiosk extends KioskObject {
 	function &source($name, $value = null) {
 		$data =& Kiosk_data();
 		return $data->source($name, $value);
+	}
+	
+	/*
+	*/
+	function namer() {
+		return new Kiosk_Namer();
 	}
 	
 	/*

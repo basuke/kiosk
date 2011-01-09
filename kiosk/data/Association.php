@@ -126,7 +126,7 @@ class Kiosk_RefersToAssociation extends Kiosk_Association {
 	function __construct($origin_class, $target_info) {
 		parent::__construct($origin_class, $target_info);
 		
-		$namer = $this->center->namer();
+		$namer = Kiosk::namer();
 		
 		if (empty($this->name)) {
 			$name = $namer->classNameToTableName($this->class);
@@ -180,7 +180,7 @@ class Kiosk_HasManyAssociation extends Kiosk_Association {
 	function __construct($origin_class, $target_info) {
 		parent::__construct($origin_class, $target_info);
 		
-		$namer = $this->center->namer();
+		$namer = Kiosk::namer();
 		
 		if (empty($this->name)) {
 			$name = $namer->classNameToTableName($this->class);

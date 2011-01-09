@@ -1,28 +1,20 @@
 <?php
 
+require_once KIOSK_LIB_DIR. '/data/sources/DB.php';
 require_once KIOSK_LIB_DIR. '/data/sources/db/Table.php';
 require_once KIOSK_LIB_DIR. '/data/sources/db/SQL.php';
 
-class Kiosk_DB_Driver {
+class Kiosk_DB_Driver extends Kiosk_Data_Source_DB {
 	var $conn;
 	var $config;
 	var $language;
 	var $tables = array();
-	var $logger;
-	
-	function Kiosk_DB_Driver($config=array()) {
-		$this->__construct($config);
-	}
 	
 	function __construct($config=array()) {
 		$this->config = $config;
 		$this->language = $this->language();
 		
 		$this->connect();
-	}
-	
-	function setLogger(&$logger) {
-		$this->logger =& $logger;
 	}
 	
 	/* database operation */
@@ -45,17 +37,13 @@ class Kiosk_DB_Driver {
 	function query($sql) {
 		$sql = trim($sql);
 		
-		if ($this->logger) {
-			$start = Kiosk::now();
-		}
+		$start = Kiosk::now();
 		
 		$result = $this->_query($sql);
 		
-		if ($this->logger) {
-			$secs = Kiosk::now() - $start;
-			
-			$this->logger->log(LOG_INFO, sprintf("%.6f %s", $secs, $sql));
-		}
+		$secs = Kiosk::now() - $start;
+		
+		$this->log(LOG_INFO, sprintf("%.6f %s", $secs, $sql));
 		
 		if (!$result) {
 			return null;

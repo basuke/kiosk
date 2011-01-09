@@ -1,7 +1,6 @@
 <?php
 
 require_once KIOSK_LIB_DIR. '/data/SchemaRepository.php';
-require_once KIOSK_LIB_DIR. '/data/Namer.php';
 
 class Kiosk_Data {
 	var $_repository;
@@ -86,10 +85,6 @@ class Kiosk_Data {
 		}
 		
 		return $this->_repository->schema($class);
-	}
-	
-	function namer() {
-		return new Kiosk_Namer();
 	}
 	
 	function apply(&$obj, $values, $override=false) {
