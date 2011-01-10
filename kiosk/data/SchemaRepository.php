@@ -12,7 +12,9 @@ class Kiosk_SchemaRepository {
 	
 	function finalize() {
 		foreach (array_keys($this->_schemas) as $class) {
-			$this->finalizeSchema($this->_schemas[$class]);
+			if  (! $this->_schemas[$class]->finalized) {
+				$this->_schemas[$class]->finalize();
+			}
 		}
 	}
 	
@@ -28,8 +30,8 @@ class Kiosk_SchemaRepository {
 		}
 		
 		$schema =& $this->_schemas[$class];
-		if  (!$schema->finalized) {
-			$this->finalizeSchema($schema);
+		if  (! $schema->finalized) {
+			$schema->finalize();
 		}
 		
 		return $schema;
@@ -37,16 +39,6 @@ class Kiosk_SchemaRepository {
 	
 	function classes() {
 		return array_keys($this->_schemas);
-	}
-	
-	function finalizeSchema(&$schema) {
-		if ($schema->finalized) return;
-		
-		$schema->finalized = true;
-		
-		$source =& $schema->source;
-		
-		$source->finalizeSchema($schema);
 	}
 }
 

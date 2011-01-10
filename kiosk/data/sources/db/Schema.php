@@ -287,8 +287,112 @@ class Kiosk_Schema extends Kiosk_Data_Schema {
 		}
 	}
 	
-	// definitions
+	// finalize
 	
+	function finalize() {
+		if ($this->finalized) return;
+		
+		$this->finalized = true;
+		
+		if (empty($this->columns)) {
+			$this->columns = array_keys($this->table->describe());
+		}
+		
+		if (empty($this->defaults)) {
+			$this->defaults = array();
+		}
+		
+		$this->buildCallbacks();
+		
+		$this->buildColumnsMap();
+		
+		$this->parseAssociation('refersTo');
+		$this->parseAssociation('belongsTo');
+		$this->parseAssociation('hasOne');
+		$this->parseAssociation('hasMany');
+		
+		$this->refersTo += $this->belongsTo;
+		unset($this->belongsTo);
+	}
+	
+	function buildCallbacks() {
+		foreach (array('beforeSave', 'afterFetch', 'afterLoad') as $callback) {
+			if (! empty($this->$callback)) {
+				if (!is_a($this->$callback, 'Kiosk_Callable')) {
+					return trigger_error(KIOSK_ERROR_CONFIG. "cannot call \$this->{$callback}");
+				}
+			} else {
+				$this->$callback = null;
+			}
+		}
+	}
+	
+	function buildColumnsMap() {
+		$this->db_columns = array();
+		$this->obj_columns = array();
+		
+		foreach ($this->columns as $obj_name => $db_name) {
+			if (is_integer($obj_name)) {
+				$obj_name = $db_name;
+			}
+			
+			$this->db_columns[$obj_name] = $db_name;
+			$this->obj_columns[$db_name] = $obj_name;
+		}
+	}
+	
+	
+	/*
+		関連の定義情報を解析して、利用しやすい形にまとめる
+	*/
+	function parseAssociation($type) {
+		if (empty($this->$type)) {
+			$this->$type = array();
+			return;
+		}
+		
+		$items = array();
+		
+		foreach ((array) $this->$type as $class=>$info) {
+			if (is_integer($class)) {
+				if (is_string($info)) {
+					/*
+						'Image', ...
+					*/
+					
+					$info = array('class' => $info);
+				} else {
+					/*
+						array('class' => 'Image', ...), ...
+					*/
+					
+					assert('is_array($info)');
+				}
+			} else {
+				/*
+					'Image' => array( ...), ...
+				*/
+				assert('is_array($info)');
+				
+				if (! isset($info['class'])) {
+					$info['class'] = $class;
+				} else if (! isset($info['name'])) {
+					$info['name'] = $class;
+				}
+			}
+			
+			$assoc = Kiosk_Association::create($type, $this->class, $info);
+			
+			if (is_null($assoc)) {
+				trigger_error(KIOSK_ERROR_CONFIG. "{$type} association definition for class {$this->class} is invalid.");
+				continue;
+			}
+			
+			$items[$assoc->name] = $assoc;
+		}
+		
+		$this->$type = $items;
+	}
 }
 
 require_once KIOSK_LIB_DIR. '/data/sources/db/schemas/NoPK.php';
