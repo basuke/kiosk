@@ -2,6 +2,9 @@
 
 require_once KIOSK_LIB_DIR. '/data/SchemaRepository.php';
 
+define('KIOSK_RESET_BINDINGS',	0x0010);
+define('KIOSK_RESET_SOURCES',	0x0020);
+
 class Kiosk_Data {
 	var $_repository;
 	var $_sources;
@@ -75,8 +78,14 @@ class Kiosk_Data {
 		$this->_repository->finalize();
 	}
 	
-	function reset() {
-		$this->_repository->reset();
+	function reset($flags) {
+		if ($flags & KIOSK_RESET_BINDINGS) {
+			$this->_repository->reset();
+		}
+		
+		if ($flags & KIOSK_RESET_SOURCES) {
+			$this->_sources = array();
+		}
 	}
 	
 	function &schema($class) {
