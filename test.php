@@ -37,7 +37,7 @@ class AllTests extends TestSuite {
 		$this->TestSuite('tests');
 		
 		global $args;
-		$files = (count($args) > 1 ? array_slice($args, 1) : glob(dirname(__FILE__). '/tests/*'));
+		$files = ($args ? $args : glob(dirname(__FILE__). '/tests/*'));
 		
 		while ($files) {
 			$file = array_shift($files);
