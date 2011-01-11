@@ -2,6 +2,9 @@
 
 require_once KIOSK_LIB_DIR. '/data/Data.php';
 
+define('KIOSK_RESET_ALL', 0xffffffff);
+define('KIOSK_RESET_SINGLETON', 0x0001);
+
 /*
 
 array(
@@ -62,9 +65,12 @@ class Kiosk_Backend {
 		return $this->_data;
 	}
 	
-	function reset() {
-		$this->_data->reset();
-		$this->_singleton = array();
+	function reset($flags) {
+		$this->_data->reset($flags);
+		
+		if ($flags & KIOSK_RESET_SINGLETON) {
+			$this->_singleton = array();
+		}
 	}
 	
 	function &singleton($class) {
@@ -105,8 +111,8 @@ function Kiosk_finalize() {
 	$data->finalize();
 }
 
-function Kiosk_reset() {
-	$GLOBALS['_Kiosk_Backend']->reset();
+function Kiosk_reset($flags = KIOSK_RESET_ALL) {
+	$GLOBALS['_Kiosk_Backend']->reset($flags);
 }
 
 function &Kiosk_singleton($class) {

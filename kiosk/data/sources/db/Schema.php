@@ -286,148 +286,116 @@ class Kiosk_Schema extends Kiosk_Data_Schema {
 			$assoc->beforeSave($obj);
 		}
 	}
-}
-
-class Kiosk_Schema_DB_NoPrimaryKeys extends Kiosk_Schema {
-	function fetchColumn(&$obj, $name, $params) {
-		return trigger_error(KIOSK_ERROR_CONFIG. 'cannot fetch column without primary key');
-	}
-}
-
-class Kiosk_Schema_DB_SinglePrimaryKey extends Kiosk_Schema {
-	function load($id, $params) {
-		$query = $this->createQuery();
-		$query->setParams($params);
-		$rows = $this->table->load($id, $query->$params);
+	
+	// finalize
+	
+	function finalize() {
+		if ($this->finalized) return;
 		
-		if (is_array($id) == false) {
-			if ($rows == null) return null;
-			
-			$rows = array($rows);
+		$this->finalized = true;
+		
+		if (empty($this->columns)) {
+			$this->columns = array_keys($this->table->describe());
 		}
 		
-		$objects = $query->rowsToObjects($rows);
-		if ($this->afterLoad) {
-			$this->applyFilter($objects, $this->afterLoad);
+		if (empty($this->defaults)) {
+			$this->defaults = array();
 		}
 		
-		if (is_array($id) == false) {
-			return array_first($objects);
-		}
+		$this->buildCallbacks();
 		
-		return $objects;
+		$this->buildColumnsMap();
+		
+		$this->parseAssociation('refersTo');
+		$this->parseAssociation('belongsTo');
+		$this->parseAssociation('hasOne');
+		$this->parseAssociation('hasMany');
+		
+		$this->refersTo += $this->belongsTo;
+		unset($this->belongsTo);
 	}
 	
-	function save(&$obj) {
-		$id = $this->getId($obj);
-		
-		// 新規保存か？
-		if (is_null($id)) {
-			// 初期値を埋める
-			$data =& Kiosk_data();
-			$data->apply($obj, $this->defaultValues(), false);
-			
-			// 保存前に行う処理を実行する
-			$this->_beforeSave($this, $obj);
-			
-			// 保存用の値のハッシュを取得する
-			$columns = $this->collectValues($obj, Kiosk_INCLUDE_PRIMARY_KEYS);
-			
-			// テーブルに保存
-			$success = $this->table->insert($columns);
-			if (!$success) {
-				return trigger_error(KIOSK_ERROR_RUNTIME. 'insert failed');
-			}
-			
-			// 新規IDをオブジェクトにセット
-			$this->setId($obj, $this->table->lastId());
-		} else {
-			// 保存前に行う処理を実行する
-			$this->_beforeSave($this, $obj);
-			
-			$columns = $this->collectValues($obj, Kiosk_WITHOUT_PRIMARY_KEYS);
-			
-			$this->table->update($columns, $this->conditionForPrimaryKey($id));
-		}
-		
-		return true;
-	}
-	
-	function destroy(&$obj) {
-		$id = $this->getId($obj);
-		if (is_null($id)) {
-			return trigger_error(KIOSK_ERROR_RUNTIME. 'cannnot destroy unsaved object');
-		}
-		
-		// テーブルから削除
-		$count = $this->table->delete($this->conditionForPrimaryKey($id));
-		if (!$count) {
-			return trigger_error(KIOSK_ERROR_RUNTIME. 'delete failed');
-		}
-		
-		// オブジェクトIDをnullにセット
-		$this->setId($obj, null);
-		return true;
-	}
-	
-}
-
-class Kiosk_Schema_DB_MultiPrimaryKeys extends Kiosk_Schema {
-	function load($id, $params) {
-		$condition = $id;
-		
-		$multi = is_pure_array($condition);
-		
-		if ($multi) {
-			$list = $condition;
-			
-			if (empty($list)) return array();
-			
-			// 主キーが一つだけの場合には、例外として値だけの配列も認める
-			if (!is_array($list[0]) and count($this->primaryKeys) == 1) {
-				$params['conditions'] = array($this->primaryKeys[0] => $list);
+	function buildCallbacks() {
+		foreach (array('beforeSave', 'afterFetch', 'afterLoad') as $callback) {
+			if (! empty($this->$callback)) {
+				if (!is_a($this->$callback, 'Kiosk_Callable')) {
+					return trigger_error(KIOSK_ERROR_CONFIG. "cannot call \$this->{$callback}");
+				}
 			} else {
-				$params['conditions'] = array('OR' => $list);
+				$this->$callback = null;
 			}
-		} else {
-			$params['conditions'] = $condition;
-			$params[] = 'first';
+		}
+	}
+	
+	function buildColumnsMap() {
+		$this->db_columns = array();
+		$this->obj_columns = array();
+		
+		foreach ($this->columns as $obj_name => $db_name) {
+			if (is_integer($obj_name)) {
+				$obj_name = $db_name;
+			}
+			
+			$this->db_columns[$obj_name] = $db_name;
+			$this->obj_columns[$db_name] = $obj_name;
+		}
+	}
+	
+	
+	/*
+		関連の定義情報を解析して、利用しやすい形にまとめる
+	*/
+	function parseAssociation($type) {
+		if (empty($this->$type)) {
+			$this->$type = array();
+			return;
 		}
 		
-		return $this->find($params);
-	}
-	
-	function save(&$obj) {
-		$condition = $this->conditionsForPrimaryKeys($obj);
-		$columns = $this->collectValues($obj, Kiosk_WITHOUT_PRIMARY_KEYS);
+		$items = array();
 		
-		$updated = $this->table->update($columns, $condition);
-		if ($updated > 0) return true;
-		
-		$columns = $this->collectValues($obj, Kiosk_INCLUDE_PRIMARY_KEYS);
-		
-		$inserted = $this->table->insert($columns);
-		return ($inserted > 0);
-	}
-	
-	function destroy(&$obj) {
-		$condition = $this->conditionsForPrimaryKeys($obj);
-		$deleted = $this->table->delete($condition);
-		return ($deleted > 0);
-	}
-	
-	function conditionsForPrimaryKeys($obj) {
-		assert('$this->primaryKeys and is_array($this->primaryKeys)');
-		
-		$conditions = array();
-		
-		foreach ($this->primaryKeys as $column) {
-			$conditions[$column] = $obj->$column;
+		foreach ((array) $this->$type as $class=>$info) {
+			if (is_integer($class)) {
+				if (is_string($info)) {
+					/*
+						'Image', ...
+					*/
+					
+					$info = array('class' => $info);
+				} else {
+					/*
+						array('class' => 'Image', ...), ...
+					*/
+					
+					assert('is_array($info)');
+				}
+			} else {
+				/*
+					'Image' => array( ...), ...
+				*/
+				assert('is_array($info)');
+				
+				if (! isset($info['class'])) {
+					$info['class'] = $class;
+				} else if (! isset($info['name'])) {
+					$info['name'] = $class;
+				}
+			}
+			
+			$assoc = Kiosk_Association::create($type, $this->class, $info);
+			
+			if (is_null($assoc)) {
+				trigger_error(KIOSK_ERROR_CONFIG. "{$type} association definition for class {$this->class} is invalid.");
+				continue;
+			}
+			
+			$items[$assoc->name] = $assoc;
 		}
 		
-		$query = $this->createQuery();
-		return $query->parseConditions($conditions);
+		$this->$type = $items;
 	}
-	
 }
+
+require_once KIOSK_LIB_DIR. '/data/sources/db/schemas/NoPK.php';
+require_once KIOSK_LIB_DIR. '/data/sources/db/schemas/SinglePK.php';
+require_once KIOSK_LIB_DIR. '/data/sources/db/schemas/MultiPK.php';
 

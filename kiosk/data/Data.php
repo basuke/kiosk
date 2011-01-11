@@ -2,6 +2,9 @@
 
 require_once KIOSK_LIB_DIR. '/data/SchemaRepository.php';
 
+define('KIOSK_RESET_BINDINGS',	0x0010);
+define('KIOSK_RESET_SOURCES',	0x0020);
+
 class Kiosk_Data {
 	var $_repository;
 	var $_sources;
@@ -44,8 +47,39 @@ class Kiosk_Data {
 		eval($code);
 	}
 	
+	function _findSourceClass($type) {
+		$dir = dirname(__FILE__);
+		$pattern = '|/'. strtolower($type). '\\.php$|';
+		
+		foreach (glob("$dir/sources/*.php") as $path) {
+			if (preg_match($pattern, strtolower($path))) {
+				require_once $path;
+				return 'Kiosk_Data_Source_'. $type;
+			}
+		}
+		
+		return null;
+	}
+	
 	function &_openSource($config) {
-		return Kiosk_Data_Source_DB::openSource($config);
+		$type = $config['type'];
+		if (! $type) {
+			trigger_error(KIOSK_ERROR_CONFIG. 'no source type specified');
+			return null;
+		}
+		
+		$class = $this->_findSourceClass($type);
+		if (! $class) {
+			trigger_error(KIOSK_ERROR_CONFIG. "no source class found with type '{$type}'");
+			return null;
+		}
+		
+		$source =& call_user_func(array($class, 'open'), $config);
+		if (! $source) {
+			return null;
+		}
+		
+		return $source;
 	}
 	
 	function &source($name, $config=null) {
@@ -59,6 +93,7 @@ class Kiosk_Data {
 			}
 		} else {
 			$source =& $this->_openSource($config);
+			if (! $source) return null;
 			
 			if ($name) {
 				if (isset($this->_sources[$name])) {
@@ -75,8 +110,14 @@ class Kiosk_Data {
 		$this->_repository->finalize();
 	}
 	
-	function reset() {
-		$this->_repository->reset();
+	function reset($flags) {
+		if ($flags & KIOSK_RESET_BINDINGS) {
+			$this->_repository->reset();
+		}
+		
+		if ($flags & KIOSK_RESET_SOURCES) {
+			$this->_sources = array();
+		}
 	}
 	
 	function &schema($class) {
