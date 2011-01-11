@@ -64,16 +64,10 @@ class Kiosk_Data_Source_DB extends Kiosk_Data_Source {
 			$schema_class = 'Kiosk_Schema_DB_NoPrimaryKeys';
 		}
 		
-		$schema =& new $schema_class();
-		foreach ($params as $key=>$value) {
-			$schema->$key = $value;
-		}
+		$schema =& new $schema_class($class, $source, $params);
 		
-		$schema->class = $class;
-		$schema->source =& $this;
 		$schema->name = $name;
 		$schema->table =& $table;
-		$schema->finalized = false;
 		
 		return $schema;
 	}

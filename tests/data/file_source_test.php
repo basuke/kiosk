@@ -38,9 +38,11 @@ class Kiosk_Data_FileSource_TestCase extends UnitTestCase {
 		$this->assertIsA($fs, 'Kiosk_Data_Source');
 		
 		MockFileEntity::bind($fs, array(
-			'source' => 'File', 
 			'path' => $this->tmp_path, 
 		));
+		
+		$e = MockFileEntity::create();
+		$this->assertIsA($e, 'MockFileEntity');
 	}
 }
 

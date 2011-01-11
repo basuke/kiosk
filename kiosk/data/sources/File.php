@@ -8,21 +8,5 @@ class Kiosk_Data_Source_File extends Kiosk_Data_Source {
 		return new Kiosk_Data_Source_File($config);
 	}
 	
-	// schema creation
-	
-	function &buildSchema($class, $params) {
-		extract($params, EXTR_SKIP);
-		
-		$schema_class = 'Kiosk_Schema';
-		
-		$schema =& new $schema_class();
-		foreach ($params as $key=>$value) {
-			$schema->$key = $value;
-		}
-		
-		$schema->finalized = false;
-		
-		return $schema;
-	}
 }
 

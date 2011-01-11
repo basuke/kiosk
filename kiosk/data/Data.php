@@ -18,8 +18,8 @@ class Kiosk_Data {
 		$this->_sources = array();
 	}
 	
-	function bind($class, &$db, $desc_source) {
-		$this->_repository->bind($class, $db, $desc_source);
+	function bind($class, &$source, $desc_source) {
+		$this->_repository->bind($class, $source, $desc_source);
 		
 		$this->defineFunction(
 			$class, 'create', '$columns=array()', 
