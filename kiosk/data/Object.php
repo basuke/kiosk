@@ -22,6 +22,8 @@ class KioskObject extends Kiosk_Object_CRUD_Concrete {
 			$config['driver'] = $driver;
 		}
 		
+		$config['type'] = 'DB';
+		
 		$data =& Kiosk_data();
 		return $data->source(null, $config);
 	}

@@ -47,8 +47,39 @@ class Kiosk_Data {
 		eval($code);
 	}
 	
+	function _findSourceClass($type) {
+		$dir = dirname(__FILE__);
+		$pattern = '|/'. strtolower($type). '\\.php$|';
+		
+		foreach (glob("$dir/sources/*.php") as $path) {
+			if (preg_match($pattern, strtolower($path))) {
+				require_once $path;
+				return 'Kiosk_Data_Source_'. $type;
+			}
+		}
+		
+		return null;
+	}
+	
 	function &_openSource($config) {
-		return Kiosk_Data_Source_DB::openSource($config);
+		$type = $config['type'];
+		if (! $type) {
+			trigger_error(KIOSK_ERROR_CONFIG. 'no source type specified');
+			return null;
+		}
+		
+		$class = $this->_findSourceClass($type);
+		if (! $class) {
+			trigger_error(KIOSK_ERROR_CONFIG. "no source class found with type '{$type}'");
+			return null;
+		}
+		
+		$source =& call_user_func(array($class, 'open'), $config);
+		if (! $source) {
+			return null;
+		}
+		
+		return $source;
 	}
 	
 	function &source($name, $config=null) {
@@ -62,6 +93,7 @@ class Kiosk_Data {
 			}
 		} else {
 			$source =& $this->_openSource($config);
+			if (! $source) return null;
 			
 			if ($name) {
 				if (isset($this->_sources[$name])) {

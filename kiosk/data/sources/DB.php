@@ -5,7 +5,7 @@ require_once KIOSK_LIB_DIR. '/data/sources/db/Schema.php';
 
 class Kiosk_Data_Source_DB extends Kiosk_Data_Source {
 	/* static */
-	function &openSource($config) {
+	function &open($config) {
 		if (is_string($config)) {
 			$driver = $config;
 			$config = array();
@@ -15,12 +15,14 @@ class Kiosk_Data_Source_DB extends Kiosk_Data_Source {
 		}
 		
 		if (!$driver) {
-			return trigger_error(KIOSK_ERROR_CONFIG. 'no source driver specified');
+			trigger_error(KIOSK_ERROR_CONFIG. 'no source driver specified');
+			return null;
 		}
 		
 		$class = Kiosk_Data_Source_DB::_findAndLoadDriverClass($driver);
 		if (!$class) {
-			return trigger_error(KIOSK_ERROR_CONFIG. "no source driver found: {$driver}");
+			trigger_error(KIOSK_ERROR_CONFIG. "no source driver found: {$driver}");
+			return null;
 		}
 		
 		return new $class($config);
