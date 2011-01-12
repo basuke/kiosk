@@ -29,10 +29,23 @@ class Kiosk_Data_Schema {
 	
 	/*
 		新規オブジェクトを作成する
-		デフォルトの値で埋める
 	*/
 	function createObject($columns = array()) {
 		return array_to_object($columns, $this->class);
+	}
+	
+	/*
+		オブジェクトを保存する
+	*/
+	function save(&$obj) {
+		return false;
+	}
+	
+	/*
+		オブジェクトを検索する
+	*/
+	function find($params) {
+		return array();
 	}
 	
 }
