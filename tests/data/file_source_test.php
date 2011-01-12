@@ -47,13 +47,13 @@ class Kiosk_Data_FileSource_TestCase extends UnitTestCase {
 		$e = MockFileEntity::create();
 		$this->assertIsA($e, 'MockFileEntity');
 		
-		$e->col1 = 'Hello';
-		$e->col2 = 'Help';
+		$e->col1 = 'Taro';
+		$e->col2 = 'Hello';
 		$e->col3 = 12345;
 		$this->assertTrue($e->save());
 		
 		$contents = file_get_contents($this->tmp_path);
-		$this->assertEqual($contents, "Hello,Help,12345\n");
+		$this->assertEqual($contents, "Taro,Hello,12345\n");
 		
 		// read
 		
@@ -61,7 +61,12 @@ class Kiosk_Data_FileSource_TestCase extends UnitTestCase {
 		$this->assertTrue(is_array($items));
 		$this->assertEqual(count($items), 1);
 		$this->assertIsA($items[0], 'MockFileEntity');
-		$this->assertEqual($items[0]->col1, 'Hello');
+		$this->assertEqual($items[0]->col1, 'Taro');
+		
+		MockFileEntity::import(array(
+			array('col1'=>'Jiro', 'col3'=>100), 
+			array('col1'=>'Saburo', 'col2'=>'Bye', 'col3'=>50, 'col4'=>null), 
+		));
 	}
 }
 

@@ -35,6 +35,25 @@ class Kiosk_Data_Schema {
 	}
 	
 	/*
+		複数のオブジェクトを一括でインポートする
+	*/
+	function import($items) {
+		$result = array();
+		
+		foreach ($items as $columns) {
+			$obj = $this->createObject($columns);
+			
+			if ($obj->save()) {
+				$result[] = $obj;
+			} else {
+				trigger_error(KIOSK_ERROR_RUNTIME. "failed to save object of class {$this->class}");
+			}
+		}
+		
+		return $result;
+	}
+	
+	/*
 		オブジェクトを保存する
 	*/
 	function save(&$obj) {

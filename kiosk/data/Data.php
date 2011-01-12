@@ -152,23 +152,21 @@ class Kiosk_Data {
 	}
 	
 	function import($class, $args) {
-		return $this->_import($class, $args, array());
+		$items = array();
+		$this->_collectImportItems($args, $items);
+		
+		$schema =& $this->schema($class);
+		return $schema->import($items);
 	}
 	
-	function _import($class, $items, $result) {
-		if (is_pure_array($items)) {
-			foreach ($items as $columns) {
-				$result = $this->_import($class, $columns, $result);
+	function _collectImportItems($args, &$items) {
+		if (is_pure_array($args)) {
+			foreach ($args as $arg) {
+				$this->_collectImportItems($arg, $items);
 			}
 		} else {
-			$obj =& $this->create($class, $items);
-			if ($obj->save()) {
-				$result[] =& $obj;
-			} else {
-				trigger_error(KIOSK_ERROR_RUNTIME. "failed to save object of class {$class}");
-			}
+			$items[] = $args;
 		}
-		return $result;
 	}
 	
 	function load($class, $id, $params) {
