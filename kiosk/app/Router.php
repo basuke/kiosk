@@ -1,7 +1,9 @@
 <?php
 
 /*
-	Kiosk App Router
+	Part of Kiosk framework.
+	
+	Written by Yosuke "Basuke" Suzuki. @basuke
 */
 
 class Kiosk_App_Router {
