@@ -15,9 +15,7 @@ define('KIOSK_HAS_REAL_CLASS', KIOSK_PHP_5_3);
 define('KIOSK_HAS_EXCEPTION', KIOSK_PHP_5);
 
 require_once KIOSK_LIB_DIR. '/data/Object.php';
-require_once KIOSK_LIB_DIR. '/Callable.php';
 require_once KIOSK_LIB_DIR. '/Backend.php';
-require_once KIOSK_LIB_DIR. '/Namer.php';
 
 class Kiosk extends KioskObject {
 	/*
@@ -36,7 +34,15 @@ class Kiosk extends KioskObject {
 	/*
 	*/
 	function namer() {
+		require_once KIOSK_LIB_DIR. '/Namer.php';
 		return new Kiosk_Namer();
+	}
+	
+	/*
+	*/
+	function app($dir) {
+		require_once KIOSK_LIB_DIR. '/app/App.php';
+		return new Kiosk_App($dir);
 	}
 	
 	/*
@@ -51,6 +57,8 @@ class Kiosk extends KioskObject {
 		実行可能オブジェクトを生成して返す
 	*/
 	function func($func) {
+		require_once KIOSK_LIB_DIR. '/Callable.php';
+		
 		$args = func_get_args();
 		array_shift($args);
 		
