@@ -25,7 +25,8 @@ class Kiosk_Data_Source_DB extends Kiosk_Data_Source {
 			return null;
 		}
 		
-		return new $class($config);
+		$source =& new $class($config);
+		return $source;
 	}
 	
 	/* static private */
@@ -58,7 +59,7 @@ class Kiosk_Data_Source_DB extends Kiosk_Data_Source {
 		$schema_class = 'Kiosk_Schema';
 		if (! empty($params['primaryKeys'])) {
 			$schema_class = 'Kiosk_Schema_DB_MultiPrimaryKeys';
-		} else if ($table->primaryKeyColumn() or $table->column('id')) {
+		} else if ($table->primaryKeyColumn() or $table->column('id') or ! empty($params['primaryKey'])) {
 			$schema_class = 'Kiosk_Schema_DB_SinglePrimaryKey';
 		} else {
 			$schema_class = 'Kiosk_Schema_DB_NoPrimaryKeys';

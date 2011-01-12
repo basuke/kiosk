@@ -4,11 +4,11 @@ require_once KIOSK_LIB_DIR. '/data/object/CRUD.php';
 require_once KIOSK_LIB_DIR. '/data/sources/DB.php';
 
 if (KIOSK_HAS_REAL_CLASS) {
-	require_once KIOSK_LIB_DIR. '/data/object/crud/Concrete_php5.php';
+	require_once KIOSK_LIB_DIR. '/data/object/crud/Concrete_5_3.php';
 } else if (KIOSK_PHP_4) {
-	require_once KIOSK_LIB_DIR. '/data/object/crud/Concrete_php4.php';
+	require_once KIOSK_LIB_DIR. '/data/object/crud/Concrete_4.php';
 } else {
-	trigger_error('Kiosk requires PHP 5.3 or later');
+	require_once KIOSK_LIB_DIR. '/data/object/crud/Concrete_5.php';
 }
 
 class KioskObject extends Kiosk_Object_CRUD_Concrete {
