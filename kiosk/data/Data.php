@@ -75,10 +75,6 @@ class Kiosk_Data {
 		}
 		
 		$source =& call_user_func(array($class, 'open'), $config);
-		if (! $source) {
-			return null;
-		}
-		
 		return $source;
 	}
 	
@@ -93,13 +89,13 @@ class Kiosk_Data {
 			}
 		} else {
 			$source =& $this->_openSource($config);
-			if (! $source) return null;
-			
-			if ($name) {
-				if (isset($this->_sources[$name])) {
-					unset($this->_sources[$name]);
+			if ($source) {
+				if ($name) {
+					if (isset($this->_sources[$name])) {
+						unset($this->_sources[$name]);
+					}
+					$this->_sources[$name] =& $source;
 				}
-				$this->_sources[$name] =& $source;
 			}
 		}
 		
@@ -148,7 +144,8 @@ class Kiosk_Data {
 	
 	function &create($class, $columns) {
 		$schema =& $this->schema($class);
-		return $schema->createObject($columns);
+		$object =& $schema->createObject($columns);
+		return $object;
 	}
 	
 	function import($class, $args) {

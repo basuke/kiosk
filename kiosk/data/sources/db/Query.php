@@ -12,13 +12,8 @@ class Kiosk_Data_Source_DB_Query extends Kiosk_Data_Query {
 	var $table = null;
 	var $alias = null;
 	var $join = array();
-	var $columns = '*';
-	var $conditions = null;
 	var $group = null;
 	var $having = null;
-	var $order = null;
-	var $limit = 0;
-	var $offset = 0;
 	
 	function __construct() {
 		$this->language = new Kiosk_Data_DB_SQL();
@@ -33,25 +28,17 @@ class Kiosk_Data_Source_DB_Query extends Kiosk_Data_Query {
 		$this->table = $table;
 	}
 	
-	function setParams($params) {
-		$data =& Kiosk_data();
-		$data->apply($this, $params, true);
-	}
-	
-	function params() {
-		$data =& Kiosk_data();
-		return $data->collect($this, array(
-			'table', 
-			'alias', 
-			'join', 
-			'columns', 
-			'conditions', 
-			'group', 
-			'having', 
-			'order', 
-			'limit', 
-			'offset', 
-		));
+	function paramsToCollect() {
+		return array_merge(
+			parent::paramsToCollect(), 
+			array(
+				'table', 
+				'alias', 
+				'join', 
+				'group', 
+				'having', 
+			)
+		);
 	}
 	
 	/*
@@ -162,50 +149,15 @@ class Kiosk_Data_Source_DB_Query extends Kiosk_Data_Query {
 	function parseOrder($order) {
 		$orders = array();
 		
-		foreach (cs($order) as $token) {
-			$token = trim($token);
-			if (empty($token)) continue;
-			
-			$result = $this->parseOrderColumn($token);
-			if (! $result) {
-				return trigger_error(KIOSK_ERROR_SYNTAX. "invalid order '{$token}'");
-			}
-			
-			list($column, $reverse) = $result;
+		$result = parent::parseOrder($order);
+		if (!$result) return null;
+		
+		foreach ($result as $order) {
+			list($column, $reverse) = $order;
 			$orders[] = $this->language->orderBy($column, $reverse);
 		}
 		
 		return join(',', $orders);
-	}
-	
-	function parseOrderColumn($column) {
-		$reverse = false;
-		
-		if ($column[0] == '-') {
-			$reverse = true;
-			$column = substr($column, 1);
-		}
-		
-		if (strpos($column, ' ') !== false) {
-			list($column, $order) = qw($column, 2);
-			switch (strtoupper($order)) {
-				case 'ASC':
-					break;
-					
-				case 'DESC':
-					$reverse = !$reverse;
-					break;
-					
-				default:
-					return false;
-			}
-		}
-		
-		if (preg_match('/^[a-z_]+(\\.[a-z._]+)?$/i', $column) == false) {
-			return false;
-		}
-		
-		return array($column, $reverse);
 	}
 	
 	/*
@@ -231,16 +183,6 @@ class Kiosk_Data_Source_DB_Query extends Kiosk_Data_Query {
 		$row = $this->db->fetchOne($sql, false);
 		
 		return intval($row[0]);
-	}
-	
-	function fetchRows() {
-		$sql = $this->language->selectStatement($this->params());
-		return $this->db->fetchRows($sql, false);
-	}
-	
-	function fetchOne() {
-		$sql = $this->language->selectStatement($this->params());
-		return $this->db->fetchOne($sql, false);
 	}
 }
 

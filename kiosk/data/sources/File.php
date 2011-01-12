@@ -5,13 +5,15 @@ require_once KIOSK_LIB_DIR. '/data/Source.php';
 class Kiosk_Data_Source_File extends Kiosk_Data_Source {
 	/* static */
 	function &open($config) {
-		return new Kiosk_Data_Source_File($config);
+		$source =& new Kiosk_Data_Source_File($config);
+		return $source;
 	}
 	
 	// schema creation
 	
 	function &buildSchema($class, $params) {
-		return new Kiosk_Data_Source_File_Schema($class, $this, $params);
+		$schema =& new Kiosk_Data_Source_File_Schema($class, $this, $params);
+		return $schema;
 	}
 }
 
@@ -45,7 +47,7 @@ class Kiosk_Data_Source_File_Schema extends Kiosk_Data_Schema {
 		$items = array();
 		
 		foreach ($this->columns as $name) {
-			$items[] = (empty($name) ? '' : strval($obj->$name));
+			$items[] = (empty($obj->$name) ? '' : strval($obj->$name));
 		}
 		
 		return join(',', $items). "\n";

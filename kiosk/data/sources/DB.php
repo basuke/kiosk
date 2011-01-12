@@ -10,13 +10,14 @@ class Kiosk_Data_Source_DB extends Kiosk_Data_Source {
 			$driver = $config;
 			$config = array();
 		} else {
-			$driver = $config['driver'];
+			$driver = @$config['driver'];
 			unset($config['driver']);
 		}
 		
 		if (!$driver) {
 			trigger_error(KIOSK_ERROR_CONFIG. 'no source driver specified');
-			return null;
+			$source = null;
+			return $source;
 		}
 		
 		$class = Kiosk_Data_Source_DB::_findAndLoadDriverClass($driver);
