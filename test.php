@@ -26,6 +26,8 @@ foreach ($options as $option) {
 	}
 }
 
+require_once dirname(__FILE__). '/test-config.php';
+
 if (! defined('SIMPLETEST')) {
 	define('SIMPLETEST', '../simpletest-1.0.1');
 }

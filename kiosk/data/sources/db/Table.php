@@ -104,7 +104,8 @@ class Kiosk_DB_Table {
 		$query->setParams($params);
 		
 		if (!$assoc) {
-			return $query->fetchRows();
+			$sql = $this->db->language->selectStatement($query->params());
+			return $this->db->fetchRows($sql, false);
 		}
 		
 		return $query->fetch();

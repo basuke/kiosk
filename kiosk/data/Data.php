@@ -18,8 +18,8 @@ class Kiosk_Data {
 		$this->_sources = array();
 	}
 	
-	function bind($class, &$db, $desc_source) {
-		$this->_repository->bind($class, $db, $desc_source);
+	function bind($class, &$source, $desc_source) {
+		$this->_repository->bind($class, $source, $desc_source);
 		
 		$this->defineFunction(
 			$class, 'create', '$columns=array()', 
@@ -75,10 +75,6 @@ class Kiosk_Data {
 		}
 		
 		$source =& call_user_func(array($class, 'open'), $config);
-		if (! $source) {
-			return null;
-		}
-		
 		return $source;
 	}
 	
@@ -93,13 +89,13 @@ class Kiosk_Data {
 			}
 		} else {
 			$source =& $this->_openSource($config);
-			if (! $source) return null;
-			
-			if ($name) {
-				if (isset($this->_sources[$name])) {
-					unset($this->_sources[$name]);
+			if ($source) {
+				if ($name) {
+					if (isset($this->_sources[$name])) {
+						unset($this->_sources[$name]);
+					}
+					$this->_sources[$name] =& $source;
 				}
-				$this->_sources[$name] =& $source;
 			}
 		}
 		
@@ -148,27 +144,26 @@ class Kiosk_Data {
 	
 	function &create($class, $columns) {
 		$schema =& $this->schema($class);
-		return $schema->createObject($columns);
+		$object =& $schema->createObject($columns);
+		return $object;
 	}
 	
 	function import($class, $args) {
-		return $this->_import($class, $args, array());
+		$items = array();
+		$this->_collectImportItems($args, $items);
+		
+		$schema =& $this->schema($class);
+		return $schema->import($items);
 	}
 	
-	function _import($class, $items, $result) {
-		if (is_pure_array($items)) {
-			foreach ($items as $columns) {
-				$result = $this->_import($class, $columns, $result);
+	function _collectImportItems($args, &$items) {
+		if (is_pure_array($args)) {
+			foreach ($args as $arg) {
+				$this->_collectImportItems($arg, $items);
 			}
 		} else {
-			$obj =& $this->create($class, $items);
-			if ($obj->save()) {
-				$result[] =& $obj;
-			} else {
-				trigger_error(KIOSK_ERROR_RUNTIME. "failed to save object of class {$class}");
-			}
+			$items[] = $args;
 		}
-		return $result;
 	}
 	
 	function load($class, $id, $params) {

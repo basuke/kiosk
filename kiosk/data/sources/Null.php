@@ -5,7 +5,8 @@ require_once KIOSK_LIB_DIR. '/data/Source.php';
 class Kiosk_Data_Source_Null extends Kiosk_Data_Source {
 	/* static */
 	function &open($config) {
-		return new Kiosk_Data_Source_Null($config);
+		$source =& new Kiosk_Data_Source_Null($config);
+		return $source;
 	}
 	
 	// schema creation

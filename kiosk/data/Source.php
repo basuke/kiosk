@@ -17,7 +17,7 @@ class Kiosk_Data_Source {
 		
 		@access static public
 	*/
-	function &openSource($config) {
+	function &open($config) {
 		return null;
 	}
 	
@@ -45,7 +45,7 @@ class Kiosk_Data_Source {
 	// schema creation
 	
 	function &buildSchema($class, $params) {
-		return null;
+		return new Kiosk_Data_Schema($class, $this, $params);
 	}
 }
 

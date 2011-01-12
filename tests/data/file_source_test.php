@@ -30,7 +30,7 @@ class Kiosk_Data_FileSource_TestCase extends UnitTestCase {
 		Kiosk_reset();
 	}
 	
-	function testFileSourceBind() {
+	function testBasicCRUD() {
 		$fs = Kiosk::source('file', array(
 			'type' => 'File', 
 		));
@@ -38,9 +38,55 @@ class Kiosk_Data_FileSource_TestCase extends UnitTestCase {
 		$this->assertIsA($fs, 'Kiosk_Data_Source');
 		
 		MockFileEntity::bind($fs, array(
-			'source' => 'File', 
 			'path' => $this->tmp_path, 
+			'columns' => array('col1', 'col2', 'col3'), 
 		));
+		
+		// create
+		
+		$e = MockFileEntity::create();
+		$this->assertIsA($e, 'MockFileEntity');
+		
+		$e->col1 = 'Taro';
+		$e->col2 = 'Hello';
+		$e->col3 = 12345;
+		$this->assertTrue($e->save());
+		
+		$contents = file_get_contents($this->tmp_path);
+		$this->assertEqual($contents, "Taro,Hello,12345\n");
+		
+		// read
+		
+		$items = MockFileEntity::find();
+		$this->assertTrue(is_array($items));
+		$this->assertEqual(count($items), 1);
+		$this->assertIsA($items[0], 'MockFileEntity');
+		$this->assertEqual($items[0]->col1, 'Taro');
+	}
+	
+	function testFind() {
+		$fs = Kiosk::source('file', array(
+			'type' => 'File', 
+		));
+		
+		MockFileEntity::bind($fs, array(
+			'path' => $this->tmp_path, 
+			'columns' => array('name', 'greeting', 'score'), 
+		));
+		
+		MockFileEntity::import(array(
+			array('name'=>'Taro', 'greeting'=>'Hello', 'score'=>80), 
+			array('name'=>'Jiro', 'score'=>100), 
+			array('name'=>'Saburo', 'greeting'=>'Bye', 'score'=>50, 'dumm'=>null), 
+		));
+		
+		$items = MockFileEntity::find(array(
+			'conditions' => array(
+				'score >' => 75,
+			),
+		));
+		
+//		$this->assertEqual(count($items), 2);
 	}
 }
 

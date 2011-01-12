@@ -8,23 +8,13 @@ define('Kiosk_INCLUDE_PRIMARY_KEYS', false);
 define('Kiosk_WITHOUT_PRIMARY_KEYS', true);
 
 class Kiosk_Schema extends Kiosk_Data_Schema {
-	var $class;		// クラス名
 	var $name;		// テーブル名
 	var $table;		// テーブルオブジェクト
-	var $finalized;	// 正規化したか？
 	
 	var $columns;	// カラム定義。実際にはdb_columnsとobj_columnsにマップを作る
 	
 	var $db_columns;	// キーがオブジェクトのカラム名で値がDBのカラム名のマッピング
 	var $obj_columns;	// キーがDBのカラム名で値がオブジェクトのカラム名のマッピング
-	
-	/*
-		新規オブジェクトを作成する
-		デフォルトの値で埋める
-	*/
-	function createObject($columns = array()) {
-		return array_to_object($columns, $this->class);
-	}
 	
 	function isSaved($obj) {
 		return !empty($obj->id);
