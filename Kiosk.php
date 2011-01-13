@@ -68,7 +68,7 @@ class Kiosk extends KioskObject {
 			if (! class_exists($class)) return null;
 		}
 		
-		return Kiosk::singleton($class);
+		return $GLOBALS['_Kiosk_Backend']->singleton($class);
 	}
 	
 	/*
