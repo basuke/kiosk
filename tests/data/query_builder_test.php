@@ -55,11 +55,11 @@ class Kiosk_Data_Query_TestCase extends UnitTestCase {
 			),
 			'simple hash' => array(
 				array('a'=>1), 
-				'a=1',
+				'a = 1',
 			),
 			'multi hash values' => array(
 				array('a'=>1, 'b'=>'abc', 'c'=>true, 'd'=>3.14), 
-				"(a=1 AND b='abc' AND c=TRUE AND d=3.14)",
+				"(a = 1 AND b = 'abc' AND c = TRUE AND d = 3.14)",
 			),
 			'complex 1' => array(
 				array(
@@ -68,7 +68,7 @@ class Kiosk_Data_Query_TestCase extends UnitTestCase {
 					array('OR' => array('c'=>true, 'd'=>3.14)), 
 					array('OR' => array('e'=>'foo')), 
 				), 
-				"(a=1 AND b LIKE 'abc' AND (c=TRUE OR d=3.14) AND e='foo')",
+				"(a = 1 AND b LIKE 'abc' AND (c = TRUE OR d = 3.14) AND e = 'foo')",
 			),
 		);
 		
@@ -115,7 +115,7 @@ class Kiosk_Data_Query_TestCase extends UnitTestCase {
 						)
 					)
 				),
-				"((name='Future Holdings' OR name='Steel Mega Works') AND (status='active' OR NOT (status IN ('inactive','suspended'))))",
+				"((name = 'Future Holdings' OR name = 'Steel Mega Works') AND (status = 'active' OR NOT (status IN ('inactive','suspended'))))",
 			),
 			
 		);
@@ -127,11 +127,11 @@ class Kiosk_Data_Query_TestCase extends UnitTestCase {
 		$cases = array(
 			'a' => array(
 				array('NOT a' => 'hello'), 
-				"a<>'hello'"
+				"a <> 'hello'"
 			), 
 			'b' => array(
 				array('!a' => 'hello'), 
-				"a<>'hello'"
+				"a <> 'hello'"
 			), 
 			'c' => array(
 				array('NOT a' => array(1,2,3)), 

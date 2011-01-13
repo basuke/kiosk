@@ -41,102 +41,38 @@ class Kiosk_Data_Source_DB_Query extends Kiosk_Data_Query {
 		);
 	}
 	
-	/*
-		see: testParseConditions() in test/kiosk/query_parser_test.php
-		
-		"name LIKE 'Hanako'"
-		["name LIKE 'Hanako'", 'age=20']
-		{name:'Hanako', 'age':20}
-	*/
-	function parseConditions($conditions, $or=false) {
-		if (is_string($conditions)) {
-			$conditions = array($conditions);
-		}
-		
-		if (is_array($conditions) == false) {
-			return trigger_error(KIOSK_ERROR_SYNTAX. 
-				sprintf("invalid condition '%s'", $conditions));
-		}
-		
-		$components = array();
-		foreach ($conditions as $key => $value) {
-			if (is_integer($key)) {
-				if (is_array($value)) {
-					$value = $this->parseConditions($value);
-				}
-				$components[] = $value;
-			} else if ($key === 'AND' || $key === 'OR') {
-				$value = $this->parseConditions($value, $key == 'OR');
-				
-				$components[] = $value;
-			} else if ($key === 'NOT') {
-				$value = $this->parseConditions($value);
-				
-				$components[] = 'NOT ('. $value. ')';
-			} else {
-				$components[] = $this->buildExpression($key, $value);
+	// conditions 
+	
+	function parseConditionOperator($key, $not, $op, $value) {
+		if ($op) {
+			if ($not) {
+				return trigger_error(KIOSK_ERROR_SYNTAX. sprintf("invalid operator '%s' with NOT", $op));
 			}
+		} else {
+			if (is_array($value)) {
+				$op = ($not ? 'NOT IN' : 'IN');
+			} else if (is_null($value)) {
+				$op = ($not ? 'IS NOT' : 'IS');
+			} else {
+				$op = ($not ? '<>' : '=');
+			}
+			
+			$not = false;
 		}
 		
-		$components = array_filter($components);
-		
-		if (empty($components)) {
-			return null;
-		}
-		
-		if (count($components) == 1) {
-			return $components[0];
-		}
-		
-		return $this->joinConditions($components, $or);
+		return array($key, $not, $op);
 	}
 	
 	function joinConditions($conditions, $or) {
 		return '('. join(($or ? ' OR ' : ' AND '), $conditions). ')';
 	}
 	
-	function buildExpression($key, $value) {
-		assert('is_string($key)');
-		
-		list($key, $op) = $this->parseConditionKey(trim($key), $value);
-		$value = $this->parseConditionValue($value);
-		
-		return $key. $op. $value;
+	function notCondition($condition) {
+		return 'NOT ('. $condition. ')';
 	}
 	
-	function parseConditionKey($key, $value) {
-		$not = false;
-		$op = null;
-		
-		// NOT(!)の処理
-		while (preg_match('/^([!]|NOT ) *(.+)/', $key, $match)) {
-			$key = $match[2];
-			$not = !$not;
-		}
-		
-		list($key, $op) = qw($key, 2);
-		
-		if ($op) {
-			if ($not) {
-				return trigger_error(KIOSK_ERROR_SYNTAX. sprintf("invalid operator '%s' with NOT", $op));
-			}
-			
-			$op = ' '. $op. ' ';
-		} else {
-			if (is_array($value)) {
-				$op = ($not ? ' NOT IN ' : ' IN ');
-			} else if (is_null($value)) {
-				$op = ($not ? ' IS NOT ' : ' IS ');
-			} else {
-				$op = ($not ? '<>' : '=');
-			}
-		}
-		
-		return array($key, $op);
-	}
-	
-	function parseConditionValue($value) {
-		return $this->language->literal($value);
+	function buildCondition($key, $op, $value) {
+		return $key. ' '. $op. ' '. $this->language->literal($value);
 	}
 	
 	/*
@@ -317,11 +253,11 @@ class Kiosk_Data_SchemaQuery extends Kiosk_Data_Source_DB_Query {
 	}
 	
 	function parseConditionKey($key, $value) {
-		list($key, $op) = parent::parseConditionKey($key, $value);
+		list($key, $not, $op) = parent::parseConditionKey($key, $value);
 		
 		$key = $this->schema->fullTableColumnName($key);
 		
-		return array($key, $op);
+		return array($key, $not, $op);
 	}
 	
 	function parseConditionValue($value) {

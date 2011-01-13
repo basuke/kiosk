@@ -34,6 +34,127 @@ class Kiosk_Data_Query {
 		return $data->collect($this, $this->paramsToCollect());
 	}
 	
+	// fetch ==================================
+	
+	function fetch() {
+		return array();
+	}
+	
+	function count() {
+		return 0;
+	}
+	
+	// conditions =============================
+	
+	function parseConditions($conditions, $or=false) {
+		if (is_string($conditions)) {
+			$conditions = array($conditions);
+		}
+		
+		if (is_array($conditions) == false) {
+			return trigger_error(KIOSK_ERROR_SYNTAX. 
+				sprintf("invalid condition '%s'", $conditions));
+		}
+		
+		$components = array();
+		foreach ($conditions as $key => $value) {
+			if (is_integer($key)) {
+				if (is_array($value)) {
+					$value = $this->parseConditions($value);
+				}
+				$components[] = $value;
+			} else if ($key === 'AND' || $key === 'OR') {
+				$value = $this->parseConditions($value, $key == 'OR');
+				
+				$components[] = $value;
+			} else if ($key === 'NOT') {
+				$value = $this->parseConditions($value);
+				
+				$components[] = $this->notCondition($value);
+			} else {
+				assert('is_string($key)');
+				
+				list($key, $not, $op, $value) = $this->parseCondition(trim($key), $value);
+				
+				$cond = $this->buildCondition($key, $op, $value);
+				
+				if ($not) {
+					$cond = $this->notCondition($value);
+				}
+				
+				$components[] = $cond;
+			}
+		}
+		
+		$components = array_filter($components);
+		
+		if (empty($components)) {
+			return null;
+		}
+		
+		if (count($components) == 1) {
+			return $components[0];
+		}
+		
+		return $this->joinConditions($components, $or);
+	}
+	
+	function parseCondition($key, $value) {
+		assert('is_string($key)');
+		
+		$value = $this->parseConditionValue($value);
+		
+		list($key, $not, $op) = $this->parseConditionKey(trim($key), $value);
+		
+		return array($key, $not, $op, $value);
+	}
+	
+	function parseConditionKey($key, $value) {
+		$not = false;
+		$op = null;
+		
+		// NOT(!)の処理
+		while (preg_match('/^([!]|NOT ) *(.+)/', $key, $match)) {
+			$key = $match[2];
+			$not = !$not;
+		}
+		
+		list($key, $op) = qw($key, 2);
+		
+		return $this->parseConditionOperator($key, $not, $op, $value);
+	}
+	
+	function parseConditionOperator($key, $not, $op, $value) {
+		if (!$op) {
+			if (is_array($value)) {
+				$op = 'IN';
+			} else if (is_null($value)) {
+				$op = 'IS';
+			} else {
+				$op = '=';
+			}
+		}
+		
+		return array($key, $not, $op);
+	}
+	
+	function parseConditionValue($value) {
+		return $value;
+	}
+	
+	function joinConditions($conditions, $or) {
+		assert('is_array*$conditions');
+		return array(($or ? '|' : '&') => $conditions);
+	}
+	
+	function notCondition($condition) {
+		return array('!' => $condition);
+	}
+	
+	function buildCondition($key, $op, $value) {
+		return array($op => array($key, $value));
+	}
+	
 	// order ==================================
 	
 	/*
