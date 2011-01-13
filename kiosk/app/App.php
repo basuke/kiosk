@@ -6,6 +6,8 @@
 	Written by Yosuke "Basuke" Suzuki. @basuke
 */
 
+require_once KIOSK_LIB_DIR. '/app/Router.php';
+
 class Kiosk_App_App {
 	var $_router;
 	
