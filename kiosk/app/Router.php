@@ -6,13 +6,33 @@
 	Written by Yosuke "Basuke" Suzuki. @basuke
 */
 
+/**
+ *	URLからルーティングを行うためのクラス
+ *	
+ *	@access public
+ */
 class Kiosk_App_Router {
 	var $_routes = array();
 	
-	function map($pattern, $params=array(), $options=array()) {
-		$this->_routes[] = new Kiosk_App_Route($pattern, $params, $options);
+	/**
+	 *	ルートパターンを設定する
+	 *	
+	 *	@param $pattern RilsスタイルのURLパターン
+	 *	@param $defaults マッチするパターン以外で返す変数の値
+	 *	@param $pattern パターンに現れる変数の実際に正規表現
+	 *	@access pubic
+	 */
+	function map($pattern, $defaults=array(), $variables=array()) {
+		$this->_routes[] = new Kiosk_App_Route($pattern, $defaults, $variables);
 	}
 	
+	/**
+	 *	URLを渡してマッチするルート情報を返す
+	 *	
+	 *	@param $url  マッチさせるURL文字列。
+	 *	@return mixed マッチした値を収めた連想配列。どれともマッチしない場合はnull。
+	 *	@access pubic
+	 */
 	function route($url) {
 		foreach ($this->_routes as $route) {
 			$result = $route->match($url);
@@ -22,6 +42,13 @@ class Kiosk_App_Router {
 		return null;
 	}
 	
+	/**
+	 *	routeの逆。URLを構成する値を元に、パターンにマッチするURLを返す。
+	 *	
+	 *	@param $params URLに必要な値を収めた連想配列。
+	 *	@return string マッチした文字列。マッチしなければnull 
+	 *	@access pubic
+	 */
 	function url($params) {
 		foreach ($this->_routes as $route) {
 			$url = $route->build($params);
@@ -32,19 +59,37 @@ class Kiosk_App_Router {
 	}
 }
 
+/**
+ *	ルート情報
+ *	
+ *	@access private
+ */
 class Kiosk_App_Route {
-	function Kiosk_App_Route($pattern, $params, $options) {
-		$this->__construct($pattern, $params, $options);
+	var $_pattern;
+	var $_defaults;
+	var $_urlPattern;
+	var $_variables;
+	
+	function Kiosk_App_Route($pattern, $defaults, $variables) {
+		$this->__construct($pattern, $defaults, $variables);
 	}
 	
-	function __construct($pattern, $params, $options) {
-		$this->_url = $pattern;
-		$this->_compile($pattern, $options);
-		$this->_params = $params;
+	function __construct($pattern, $defaults, $variables) {
+		$this->_pattern = $pattern;
+		$this->_defaults = $defaults;
+		
+		$this->_compile($pattern, $variables);
 	}
 	
+	/**
+	 *	ルート情報とマッチするか調べ、マッチした場合は抜き出した値を返す
+	 *	
+	 *	@param $url 調べるURL文字列
+	 *	@return array マッチしたら連想配列。 マッチしなければnull
+	 *	@access public
+	 */
 	function match($url) {
-		if (!preg_match($this->_pattern, $url, $matches)) return;
+		if (!preg_match($this->_urlPattern, $url, $matches)) return;
 		
 		$params = array();
 		foreach ($matches as $key=>$value) {
@@ -52,13 +97,20 @@ class Kiosk_App_Route {
 			
 			$params[$key] = $value;
 		}
-		return $params + $this->_params;
+		return $params + $this->_defaults;
 	}
 	
+	/**
+	 *	ルート情報を構成する値を元にURLを構築する
+	 *	
+	 *	@param $params URLに必要な値を収めた連想配列。
+	 *	@return string パターンにマッチしたらURL文字列。マッチしなければnull
+	 *	@access public
+	 */
 	function build($params) {
-		$url = $this->_url;
+		$url = $this->_pattern;
 		
-		foreach ($this->_params as $name => $value) {
+		foreach ($this->_defaults as $name => $value) {
 			if (!isset($params[$name])) return null;
 			if ($value != $params[$name]) return null;
 			
@@ -66,9 +118,9 @@ class Kiosk_App_Route {
 			unset($params[$name]);
 		}
 		
-		if (count($params) != count($this->_options)) return null;
+		if (count($params) != count($this->_variable_patterns)) return null;
 		
-		foreach ($this->_options as $name => $pattern) {
+		foreach ($this->_variable_patterns as $name => $pattern) {
 			if (!isset($params[$name])) return null;
 			if (!preg_match($pattern, $params[$name])) return null;
 			
@@ -78,11 +130,11 @@ class Kiosk_App_Route {
 		return $url;
 	}
 	
-	function _compile($pattern, $options) {
-		if (preg_match_all('|:(\w+)|', $pattern, $matches)) {
+	function _compile($pattern, $variables) {
+		if (preg_match_all('{:(\w+)}', $pattern, $matches)) {
 			foreach ($matches[1] as $name) {
-				if (!isset($options[$name])) {
-					$options[$name] = '\\w+';
+				if (!isset($variables[$name])) {
+					$variables[$name] = '\\w+';
 				}
 			}
 		}
@@ -90,17 +142,17 @@ class Kiosk_App_Route {
 		$patterns = array();
 		$replaces = array();
 		
-		foreach ($options as $name => $pat) {
-			$patterns[] = '|:'. $name. '|';
+		foreach ($variables as $name => $pat) {
+			$patterns[] = '{:'. $name. '}';
 			$replaces[] = "(?P<$name>$pat)";
 			
-			$options[$name] = '|^'. $pat. '$|';
+			$variables[$name] = '{^'. $pat. '$}';
 		}
 		
 		$pattern = preg_replace($patterns, $replaces, $pattern);
 		
-		$this->_pattern = '|^'. $pattern. '$|';
-		$this->_options = $options;
+		$this->_urlPattern = '{^'. $pattern. '$}';
+		$this->_variable_patterns = $variables;
 	}
 }
 
