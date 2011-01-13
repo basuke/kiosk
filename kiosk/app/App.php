@@ -48,48 +48,99 @@ class Kiosk_App_App {
 		return $this->_router->url($params);
 	}
 	
+	// Context =================================
+	
+	function context() {
+		require_once KIOSK_LIB_DIR. '/app/Context.php';
+		
+		return new Kiosk_App_Context(); 
+	}
+	
 	// Controller ==============================
 	
-	function handleController($controller, $action, $args) {
-		if (!$action) {
-			$args['action'] = $action = 'index';
-		}
-		
-		$path = $this->controllersDir(). $controller. '.php';
-		if (file_exists($path) == false) {
-			return array();
-			return set_http_error(403, 'Forbidden');
-		}
+	function loadController($controller) {
+		$path = $this->controllerPath($controller);
+		if (file_exists($path) == false) return false;
 		
 		require_once $path;
 		
+		return true;
+	}
+	
+	function controllerPath($controller) {
+		return $this->controllersDir(). $controller. '.php';
+	}
+	
+	function runController($context) {
+		$controller = $context->controller;
+		$action = $context->action;
+		
 		$func = $controller. '__'. $action;
 		if (function_exists($func)) {
-			return $func($args);
+			return $func($context);
 		}
 		
 		if (class_exists($controller)) {
-			return $this->handleControllerClass($controller, $action, $args);
+			$c =& new $controller();
+			foreach ((array) $context as $key=>$value) {
+				$c->$key = $value;
+			}
+			
+			if (is_callable(array($c, $action))) {
+				$c->$action();
+				return (array) $c;
+			}
 		}
 		
-		return array();
+		return null;
 	}
 	
-	function handleControllerClass($class, $action, $args) {
-		$controller =& new $class($args);
-		foreach ($args as $key=>$value) {
-			$controller->$key = $value;
+	// View ====================================
+	
+	function viewPath($context) {
+		$controller = $context->controller;
+		$action = $context->action;
+		$type = $context->type;
+		
+		if (!$type) {
+			$type = 'html';
 		}
 		
-		if (is_callable(array($controller, $action)) == false) {
-			Debug::log(LOG_ERR, "action {$action} not found");
-			return set_http_error(403, 'Forbidden');
+		if (!$action) {
+			$action = 'index';
 		}
 		
-		$controller->$action();
+		$path = "{$action}.{$type}";
 		
-		return (array) $controller;
+		if ($controller) {
+			$path = $controller. '/'. $path;
+		}
+		
+		return $path;
 	}
 	
+	function render($path, $vars) {
+		$smarty = new Smarty();
+		
+		$smarty->template_dir = APP_VIEWS_DIR;
+		$smarty->compile_dir  = APP_TMP_DIR. '/templates/';
+		$smarty->config_dir   = APP_CONFIG_DIR. '/';
+		$smarty->cache_dir    = APP_CACHE_DIR. '/';
+		$smarty->plugins_dir = array('plugins', APP_LIBS_DIR. '/smarty-plugins');
+		
+		$smarty->caching = false;
+		
+		$smarty->assign('server', $_SERVER);
+		
+		foreach ($vars as $key=>$value) {
+			$smarty->assign($key, $value);
+		}
+		
+		if (DEVELOPMENT) {
+			$smarty->assign('debug', Debug::debugInfo());
+		}
+		
+		$smarty->display($path);
+	}
 }
 

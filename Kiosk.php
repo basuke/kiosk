@@ -49,6 +49,28 @@ class Kiosk extends KioskObject {
 		return $app;
 	}
 	
+	/**
+	 *	kiosk/utils/内に収められるユーティリティクラスのインスタンスを返す
+	 *	
+	 *	@param $name クラス名（Kiosk_Utils_HTTPなら "HTTP"）
+	 *	@return インスタンス 
+	 *	@access public
+	 */
+	function util($name) {
+		$class = 'Kiosk_Utils_'. $name;
+		
+		if (! class_exists($class)) {
+			$path = KIOSK_LIB_DIR. '/utils/'. $name. '.php';
+			if (! file_exists($path)) return null;
+			
+			require_once $path;
+			
+			if (! class_exists($class)) return null;
+		}
+		
+		return Kiosk::singleton($class);
+	}
+	
 	/*
 		現在時刻をmicro秒単位で返す。
 	*/
