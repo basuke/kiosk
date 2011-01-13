@@ -40,9 +40,13 @@ class Kiosk extends KioskObject {
 	
 	/*
 	*/
-	function app($dir) {
+	function &app($dir = null) {
 		require_once KIOSK_LIB_DIR. '/app/App.php';
-		return new Kiosk_App_App($dir);
+		
+		$app =& $GLOBALS['_Kiosk_Backend']->singleton('Kiosk_App_App');
+		if ($dir) $app->setAppDir($dir);
+		
+		return $app;
 	}
 	
 	/*
