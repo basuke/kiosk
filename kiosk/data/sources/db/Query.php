@@ -48,15 +48,14 @@ class Kiosk_Data_Source_DB_Query extends Kiosk_Data_Query {
 		["name LIKE 'Hanako'", 'age=20']
 		{name:'Hanako', 'age':20}
 	*/
-	function parseConditions($conditions, $op='AND') {
+	function parseConditions($conditions, $or=false) {
 		if (is_string($conditions)) {
 			$conditions = array($conditions);
 		}
 		
 		if (is_array($conditions) == false) {
 			return trigger_error(KIOSK_ERROR_SYNTAX. 
-				sprintf("invalid condition '%s' with connector '%s'", 
-						$conditions, $op));
+				sprintf("invalid condition '%s'", $conditions));
 		}
 		
 		$components = array();
@@ -67,7 +66,7 @@ class Kiosk_Data_Source_DB_Query extends Kiosk_Data_Query {
 				}
 				$components[] = $value;
 			} else if ($key === 'AND' || $key === 'OR') {
-				$value = $this->parseConditions($value, $key);
+				$value = $this->parseConditions($value, $key == 'OR');
 				
 				$components[] = $value;
 			} else if ($key === 'NOT') {
@@ -89,7 +88,11 @@ class Kiosk_Data_Source_DB_Query extends Kiosk_Data_Query {
 			return $components[0];
 		}
 		
-		return '('. join(" {$op} ", $components). ')';
+		return $this->joinConditions($components, $or);
+	}
+	
+	function joinConditions($conditions, $or) {
+		return '('. join(($or ? ' OR ' : ' AND '), $conditions). ')';
 	}
 	
 	function buildExpression($key, $value) {
