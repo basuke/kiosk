@@ -122,14 +122,14 @@ class CommonDBTestCase extends UnitTestCase {
 		// ====== 引き続き、ロードのテスト
 		
 		$id = $rows[0]['id']; // 今読み込んだ行のIDを取得
-		$row = $table->load($id);
+		$rows = $table->select('id='. $id);
 		
-		$this->assertEqual(34, $row['age']);
+		$this->assertEqual($rows[0]['age'], 34);
 		
-		$rows = $table->load(array($id));
+		$rows = $table->select("id in ($id)");
 		
-		$this->assertEqual(1, count($rows));
-		$this->assertEqual(34, $rows[$id]['age']);
+		$this->assertEqual(count($rows), 1);
+		$this->assertEqual($rows[0]['age'], 34);
 	}
 	
 	function tableObject_Insert_test() {
@@ -173,8 +173,8 @@ class CommonDBTestCase extends UnitTestCase {
 		$this->assertEqual('Hiroto Komoto', $rows[0]['name']);
 		$this->assertNull($rows[0]['value']);
 		
-		$row = $table->load($id1);
-		$this->assertEqual('Hanako Yamada', $row['name']);
+		$rows = $table->select("id=$id1");
+		$this->assertEqual('Hanako Yamada', $rows[0]['name']);
 	}
 	
 	function tableObject_update_test($expected_count=3) {

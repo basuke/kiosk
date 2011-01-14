@@ -1,6 +1,7 @@
 <?php
 
 require_once 'Kiosk.php';
+require_once KIOSK_HOME. '/tests/data/sample.php';
 
 function _require_kiosk_test($path) {
 	foreach (glob($path) as $path) {
@@ -37,114 +38,14 @@ class Kiosk_BaseData_TestCase extends UnitTestCase {
 
 // General usage
 
-class User extends Kiosk {
-}
-
-class UserScore extends Kiosk {
-}
-
-class Item extends Kiosk {
-}
-
-class Bookmark extends Kiosk {
-}
-
-class Party extends Kiosk {
-}
-
-class Image extends Kiosk {
-}
-
-class Preference extends Kiosk {
-}
-
 class Kiosk_Data_TestCase extends Kiosk_BaseData_TestCase {
-	function &schema1($dbname) {
-		// setup database schema in SQLite memory db.
-		
-		if (file_exists($dbname)) {
-			unlink($dbname);
-		}
-		
-		$db =& open_test_database();
-		
-		$db->exec("
-			CREATE TABLE person (
-				id INTEGER PRIMARY KEY,
-				name TEXT, 
-				admin_flag BOOL, 
-				age INTEGER, 
-				created_at TIMESTAMP, 
-				modified_at TIMESTAMP, 
-				
-				order_no INTEGER, 
-				
-				profile TEXT,
-				col1 INTEGER, 
-				col2 INTEGER, 
-				col3 INTEGER, 
-				
-				image_id INTEGER, 
-				party_id INTEGER
-			)");
-			
-		$db->exec("
-			CREATE TABLE person_result (
-				person_id INTEGER NOT NULL,
-				score INTEGER
-			)");
-			
-		$db->exec("
-			CREATE TABLE item (
-				id INTEGER PRIMARY KEY,
-				person_id INTEGER NOT NULL,
-				title TEXT, 
-				description TEXT, 
-				created_at TIMESTAMP, 
-				modified_at TIMESTAMP
-			)");
-			
-		$db->exec("
-			CREATE TABLE bookmark (
-				id INTEGER PRIMARY KEY,
-				person_id INTEGER NOT NULL, 
-				item_id INTEGER NOT NULL
-			)");
-			
-		$db->exec("
-			CREATE TABLE party (
-				id INTEGER PRIMARY KEY,
-				name TEXT, 
-				tag TEXT
-			)");
-		
-		$db->exec("
-			CREATE TABLE image (
-				id INTEGER PRIMARY KEY,
-				url TEXT
-			)");
-		
-		$db->exec("
-			CREATE TABLE preference (
-				party_id INTEGER,
-				name TEXT, 
-				value TEXT
-			)");
-		
-		// Setup fixtures
-		$party = $db->table('party');
-		$party->insert(array('name' => 'Republican Party', 'tag' => 're'));
-		$party->insert(array('name' => 'Democratic Party', 'tag' => 'de'));
-		
-		$this->db =& $db;
-		
-		return $db;
-	}
-	
-	function env1($dbname=':memory:', $schema_medhot='schema1') {
+	function env1() {
 		Kiosk_reset();
 		
-		$db = $this->$schema_medhot($dbname);
+		$this->db =& open_test_database();
+		$db =& $this->db;
+		
+		sample_schema1($db);
 		
 		// setup Kiosk classes
 		
@@ -212,7 +113,7 @@ class Kiosk_Data_TestCase extends Kiosk_BaseData_TestCase {
 		$this->assertEqual($schema->class, 'user');
 	}
 	
-	function testCheckSchema1() {
+	function testCheckEnv1() {
 		$this->env1();
 		$this->assertSchemaFine();
 	}
