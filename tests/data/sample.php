@@ -51,9 +51,14 @@ function sample_schema1(&$db) {
 	$db->exec("
 		CREATE TABLE item (
 			id INTEGER PRIMARY KEY,
-			person_id INTEGER NOT NULL,
+			person_id INTEGER,
 			title TEXT, 
 			description TEXT, 
+			
+			col1 INTEGER, 
+			col2 INTEGER, 
+			col3 INTEGER, 
+			
 			created_at TIMESTAMP, 
 			modified_at TIMESTAMP
 		)");

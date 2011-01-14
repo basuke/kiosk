@@ -19,8 +19,6 @@ class Kiosk_Data_Source_Null extends Kiosk_Data_Source {
 			$schema->$key = $value;
 		}
 		
-		$schema->finalized = false;
-		
 		return $schema;
 	}
 }

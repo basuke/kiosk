@@ -45,10 +45,6 @@ class Kiosk_DB_Table {
 		return $column['name'];
 	}
 	
-	function conditionForPrimaryKey($id) {
-		return $this->primaryKeyName(). '='. $this->db->literal($id);
-	}
-	
 	function fullColumnName($name) {
 		return $this->db->language->fullColumnName($this->name, $name);
 	}
@@ -61,38 +57,6 @@ class Kiosk_DB_Table {
 		$query->setParams($params);
 		
 		return $query;
-	}
-	
-	function load($id, $params=array()) {
-		if (empty($id)) return is_array($id) ? array() : null;
-		
-		$id_column = $this->primaryKeyName();
-		assert('$id_column');
-		
-		if (is_array($id)) {
-			$params['conditions'] = $id_column. ' IN '. $this->db->literal($id);
-		} else {
-			$params['conditions'] = $this->conditionForPrimaryKey($id);
-		}
-		
-		$query = $this->createQuery($params);
-		$rows = $query->fetch();
-		
-		if (! is_array($id)) {
-			return array_first($rows);
-		}
-		
-		$objects = array();
-		foreach ($rows as $object) {
-			$objects[$object[$id_column]] = $object;
-		}
-		
-		$result = array();
-		foreach ($id as $id) {
-			$result[$id] = $objects[$id];
-		}
-		
-		return $result;
 	}
 	
 	function select($params=array(), $assoc=true) {

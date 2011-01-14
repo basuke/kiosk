@@ -22,9 +22,6 @@ class Kiosk_Data_Schema {
 		スキーマ定義を完結させる
 	*/
 	function finalize() {
-		if ($this->finalized) return;
-		
-		$this->finalized = true;
 	}
 	
 	/*

@@ -154,7 +154,8 @@ class Kiosk_Schema extends Kiosk_Data_Schema {
 	// query parse and build
 	
 	function conditionForPrimaryKey($id) {
-		return $this->table->conditionForPrimaryKey($id);
+		assert('false /* no primary key information */');
+		return array('0=1');
 	}
 	
 	// association
@@ -245,10 +246,6 @@ class Kiosk_Schema extends Kiosk_Data_Schema {
 	// finalize
 	
 	function finalize() {
-		if ($this->finalized) return;
-		
-		$this->finalized = true;
-		
 		if (empty($this->columns)) {
 			$this->columns = array_keys($this->table->describe());
 		}

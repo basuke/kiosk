@@ -1,9 +1,23 @@
 <?php
 
 class Kiosk_Schema_DB_SinglePrimaryKey extends Kiosk_Schema {
+	var $primaryKey;
+	
+	function finalize() {
+		parent::finalize();
+	}
+	
+	function primaryKeyName() {
+		if ($this->primaryKey) return $this->primaryKey;
+		return $this->table->primaryKeyName();
+	}
+	
+	function conditionForPrimaryKey($id) {
+		return $this->primaryKeyName(). '='. $this->table->db->literal($id);
+	}
+	
 	function load($id, $params) {
-		$query = $this->createQuery($params);
-		$rows = $this->table->load($id, $query->params());
+		$rows = $this->_load($id, $params);
 		
 		if (is_array($id) == false) {
 			if ($rows == null) return null;
@@ -21,6 +35,39 @@ class Kiosk_Schema_DB_SinglePrimaryKey extends Kiosk_Schema {
 		}
 		
 		return $objects;
+	}
+	
+	function _load($id, $params=array()) {
+		if (empty($id)) return is_array($id) ? array() : null;
+		
+		$query = $this->createQuery($params);
+		
+		$id_column = $this->table->primaryKeyName();
+		assert('$id_column');
+		
+		if (is_array($id)) {
+			$query->conditions = $id_column. ' IN '. $this->table->db->literal($id);
+		} else {
+			$query->conditions = $this->conditionForPrimaryKey($id);
+		}
+		
+		$rows = $query->fetch();
+		
+		if (! is_array($id)) {
+			return array_first($rows);
+		}
+		
+		$objects = array();
+		foreach ($rows as $object) {
+			$objects[$object[$id_column]] = $object;
+		}
+		
+		$result = array();
+		foreach ($id as $id) {
+			$result[$id] = $objects[$id];
+		}
+		
+		return $result;
 	}
 	
 	function save(&$obj) {
