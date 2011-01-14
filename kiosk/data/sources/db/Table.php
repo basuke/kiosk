@@ -2,7 +2,6 @@
 
 require_once KIOSK_LIB_DIR. '/utils/sql.php';
 require_once KIOSK_LIB_DIR. '/utils/array.php';
-require_once KIOSK_LIB_DIR. '/data/sources/db/Query.php';
 
 class Kiosk_DB_Table {
 	var $db;
@@ -49,29 +48,15 @@ class Kiosk_DB_Table {
 		return $this->db->language->fullColumnName($this->name, $name);
 	}
 	
-	function &createQuery($params=array()) {
-		$query =& new Kiosk_Data_Source_DB_Query();
-		
-		$query->setTable($this->name);
-		$query->setDatabase($this->db);
-		$query->setParams($params);
-		
-		return $query;
-	}
-	
 	function select($params=array(), $assoc=true) {
 		if (is_string($params)) {
 			$params = array('conditions' => $params);
 		}
 		
-		$query = $this->createQuery($params);
+		$params['table'] = $this->name;
+		$sql = $this->db->language->selectStatement($params);
 		
-		if (!$assoc) {
-			$sql = $this->db->language->selectStatement($query->params());
-			return $this->db->fetchRows($sql, false);
-		}
-		
-		return $query->fetch();
+		return $this->db->fetchRows($sql, $assoc);
 	}
 	
 	function count($params=array()) {
@@ -79,8 +64,19 @@ class Kiosk_DB_Table {
 			$params = array('conditions' => $params);
 		}
 		
-		$query = $this->createQuery($params);
-		return $query->count();
+		$conditions = null;
+		extract($params);
+		
+		$params = array(
+			'table' => $this->name, 
+			'columns'=>'COUNT(*)', 
+			'conditions'=>$conditions
+		);
+		
+		$sql = $this->db->language->selectStatement($params);
+		$row = $this->db->fetchOne($sql, false);
+		
+		return intval($row[0]);
 	}
 	
 	function insert($columns) {
