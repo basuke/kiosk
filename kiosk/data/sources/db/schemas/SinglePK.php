@@ -11,7 +11,7 @@ class Kiosk_Schema_DB_SinglePrimaryKey extends Kiosk_Schema {
 			$rows = array($rows);
 		}
 		
-		$objects = $query->rowsToObjects($rows);
+		$objects = $this->rowsToObjects($rows, $query);
 		if ($this->afterLoad) {
 			$this->applyFilter($objects, $this->afterLoad);
 		}

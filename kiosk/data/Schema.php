@@ -84,7 +84,7 @@ class Kiosk_Data_Schema {
 			return $rows;
 		}
 		
-		$objects = $query->rowsToObjects($rows);
+		$objects = $this->rowsToObjects($rows, $query);
 		if ($this->afterLoad) {
 			$this->applyFilter($objects, $this->afterLoad);
 		}
@@ -95,6 +95,43 @@ class Kiosk_Data_Schema {
 		
 		return $objects;
 	}
+	
+	function rowsToObjects($rows, &$query) {
+		$objects = array();
+		
+		foreach ($rows as $key=>$row) {
+			$columns = $this->rowToColumns($row, $query);
+			$objects[$key] = $this->createObject($columns);
+		}
+		
+		foreach ($this->refersTo as $assoc) {
+			if (empty($assoc->load)) continue;
+			
+			$objects = $assoc->loadForObjects($objects);
+		}
+		
+		return $objects;
+	}
+	
+	function rowToColumns($row, &$query) {
+		$columns = array();
+		$values = array_values($row);
+		
+		foreach ($row as $key => $value) {
+			if (strpos($key, '.') !== false) {
+				$col = $query->parseColumn($key);
+				$value = $col->valueForColumn($value);
+				$key = $col->columnName();
+			} else {
+				$key = $this->objectColumnName($key);
+			}
+			$columns[$key] = $value;
+		}
+		
+		return $columns;
+	}
+	
+	// query の生成
 	
 	function queryClass() {
 		return 'Kiosk_Data_Query';

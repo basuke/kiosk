@@ -190,41 +190,6 @@ class Kiosk_Data_SchemaQuery extends Kiosk_Data_Source_DB_Query {
 		);
 	}
 	
-	function rowToColumns($row) {
-		$columns = array();
-		$values = array_values($row);
-		
-		foreach ($row as $key => $value) {
-			if (strpos($key, '.') !== false) {
-				$col = $this->parseColumn($key);
-				$value = $col->valueForColumn($value);
-				$key = $col->columnName();
-			} else {
-				$key = $this->schema->objectColumnName($key);
-			}
-			$columns[$key] = $value;
-		}
-		
-		return $columns;
-	}
-	
-	function rowsToObjects($rows) {
-		$objects = array();
-		
-		foreach ($rows as $key=>$row) {
-			$columns = $this->rowToColumns($row);
-			$objects[$key] = $this->schema->createObject($columns);
-		}
-		
-		foreach ($this->schema->refersTo as $assoc) {
-			if (empty($assoc->load)) continue;
-			
-			$objects = $assoc->loadForObjects($objects);
-		}
-		
-		return $objects;
-	}
-	
 	function addJoin($assoc) {
 		$table = $assoc->schema->name;
 		$on = $assoc->joinCondition();
