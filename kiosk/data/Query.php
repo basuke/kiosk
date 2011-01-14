@@ -91,7 +91,7 @@ class Kiosk_Data_Query {
 				$cond = $this->buildCondition($key, $op, $value);
 				
 				if ($not) {
-					$cond = $this->notCondition($value);
+					$cond = $this->notCondition($cond);
 				}
 				
 				$components[] = $cond;
@@ -155,7 +155,7 @@ class Kiosk_Data_Query {
 	}
 	
 	function joinConditions($conditions, $or) {
-		assert('is_array*$conditions');
+		assert('is_array($conditions)');
 		return array(($or ? '|' : '&') => $conditions);
 	}
 	
