@@ -63,8 +63,51 @@ class Kiosk_Data_Schema {
 	/*
 		オブジェクトを検索する
 	*/
-	function find($params) {
-		return array();
+	function find($query) {
+		if (is_string($query)) {
+			$query = array('conditions' => $query);
+		}
+		
+		if (is_array($query)) {
+			$query = $this->createQuery($query);
+		}
+		
+		assert('is_a($query, "Kiosk_Data_Query")');
+		
+		$rows = $query->fetch();
+		
+		if ($query->raw) {
+			if ($query->first) {
+				return array_first($rows);
+			}
+			
+			return $rows;
+		}
+		
+		$objects = $query->rowsToObjects($rows);
+		if ($this->afterLoad) {
+			$this->applyFilter($objects, $this->afterLoad);
+		}
+		
+		if ($query->first) {
+			return array_first($objects);
+		}
+		
+		return $objects;
+	}
+	
+	function queryClass() {
+		return 'Kiosk_Data_Query';
+	}
+	
+	function &createQuery($params = array()) {
+		$class = $this->queryClass();
+		$query =& new $class();
+		
+		$query->setSchema($this);
+		$query->setParams($params);
+		
+		return $query;
 	}
 	
 }

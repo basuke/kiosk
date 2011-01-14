@@ -16,6 +16,12 @@ class Kiosk_Schema extends Kiosk_Data_Schema {
 	var $db_columns;	// キーがオブジェクトのカラム名で値がDBのカラム名のマッピング
 	var $obj_columns;	// キーがDBのカラム名で値がオブジェクトのカラム名のマッピング
 	
+	function queryClass() {
+		return 'Kiosk_Data_SchemaQuery';
+	}
+	
+	// id
+	
 	function isSaved($obj) {
 		return !empty($obj->id);
 	}
@@ -147,14 +153,6 @@ class Kiosk_Schema extends Kiosk_Data_Schema {
 	
 	// query parse and build
 	
-	function &createQuery() {
-		$query =& new Kiosk_Data_SchemaQuery();
-		
-		$query->setSchema($this);
-		
-		return $query;
-	}
-	
 	function conditionForPrimaryKey($id) {
 		return $this->table->conditionForPrimaryKey($id);
 	}
@@ -182,39 +180,6 @@ class Kiosk_Schema extends Kiosk_Data_Schema {
 	
 	function load($id, $params) {
 		return trigger_error(KIOSK_ERROR_CONFIG. "cannot load {$class} / no primary key");
-	}
-	
-	function find($params) {
-		if (is_string($params)) {
-			$params = array('conditions' => $params);
-		}
-		
-		if (array_test_option($params, 'first')) {
-			$params['limit'] = 1;
-		}
-		
-		$query = $this->createQuery();
-		$query->setParams($params);
-		$rows = $query->fetch();
-		
-		if (array_test_option($params, 'raw')) {
-			if (array_test_option($params, 'first')) {
-				return array_first($rows);
-			}
-			
-			return $rows;
-		}
-		
-		$objects = $query->rowsToObjects($rows);
-		if ($this->afterLoad) {
-			$this->applyFilter($objects, $this->afterLoad);
-		}
-		
-		if (array_test_option($params, 'first')) {
-			return array_first($objects);
-		}
-		
-		return $objects;
 	}
 	
 	function save(&$obj) {

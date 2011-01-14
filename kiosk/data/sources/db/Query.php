@@ -170,6 +170,10 @@ class Kiosk_Data_SchemaQuery extends Kiosk_Data_Source_DB_Query {
 			$this->order = null;
 		}
 		
+		if ($this->first) {
+			$this->limit = 1;
+		}
+		
 		$data =& Kiosk_data();
 		return $data->collect($this, array(
 			'table', 

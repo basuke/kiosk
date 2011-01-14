@@ -571,6 +571,14 @@ class Kiosk_Data_TestCase extends Kiosk_BaseData_TestCase {
 		// read 4 : all
 		$users = User_find();
 		$this->assertEqual(count($users), 3);
+		
+		// read 5 : find using query object
+		
+		$query = User_query();
+		$query->conditions = array('name' => 'Hanako');
+		$users = User_find($query);
+		$this->assertEqual(count($users), 1);
+		$this->assertEqual($users[0]->name, 'Hanako');
 	}
 	
 	function testMoreFind() {
@@ -640,7 +648,6 @@ class Kiosk_Data_TestCase extends Kiosk_BaseData_TestCase {
 		$user->name = 'Jiro';
 		$user->fetch('name');
 		$this->assertEqual($user->name, 'Jiro');
-		
 	}
 	
 	function testFetchHasMany() {

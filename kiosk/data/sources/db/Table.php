@@ -53,11 +53,12 @@ class Kiosk_DB_Table {
 		return $this->db->language->fullColumnName($this->name, $name);
 	}
 	
-	function &createQuery() {
+	function &createQuery($params=array()) {
 		$query =& new Kiosk_Data_Source_DB_Query();
 		
 		$query->setTable($this->name);
 		$query->setDatabase($this->db);
+		$query->setParams($params);
 		
 		return $query;
 	}
@@ -74,8 +75,7 @@ class Kiosk_DB_Table {
 			$params['conditions'] = $this->conditionForPrimaryKey($id);
 		}
 		
-		$query = $this->createQuery();
-		$query->setParams($params);
+		$query = $this->createQuery($params);
 		$rows = $query->fetch();
 		
 		if (! is_array($id)) {
@@ -100,8 +100,7 @@ class Kiosk_DB_Table {
 			$params = array('conditions' => $params);
 		}
 		
-		$query = $this->createQuery();
-		$query->setParams($params);
+		$query = $this->createQuery($params);
 		
 		if (!$assoc) {
 			$sql = $this->db->language->selectStatement($query->params());
@@ -116,8 +115,7 @@ class Kiosk_DB_Table {
 			$params = array('conditions' => $params);
 		}
 		
-		$query = $this->createQuery();
-		$query->setParams($params);
+		$query = $this->createQuery($params);
 		return $query->count();
 	}
 	

@@ -2,8 +2,7 @@
 
 class Kiosk_Schema_DB_SinglePrimaryKey extends Kiosk_Schema {
 	function load($id, $params) {
-		$query = $this->createQuery();
-		$query->setParams($params);
+		$query = $this->createQuery($params);
 		$rows = $this->table->load($id, $query->params());
 		
 		if (is_array($id) == false) {

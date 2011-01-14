@@ -26,11 +26,19 @@ function Kiosk_load($class, $id, $params=array()) {
 }
 
 /* 
-	条件にマッチするオブジェクトの配列を返す
+	検索を行い条件にマッチするオブジェクトの配列を返す
 */
-function Kiosk_find($class, $params=array()) {
+function Kiosk_find($class, $query=array()) {
 	$data =& Kiosk_data();
-	return $data->find($class, $params);
+	return $data->find($class, $query);
+}
+
+/* 
+	オブジェクトの検索を行うための条件オブジェクトを作成して返す
+*/
+function Kiosk_query($class, $params=array()) {
+	$data =& Kiosk_data();
+	return $data->query($class, $params);
 }
 
 /*

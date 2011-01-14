@@ -7,6 +7,9 @@ class Kiosk_Data_Query {
 	var $limit = 0;
 	var $offset = 0;
 	
+	var $first = false;
+	var $raw = false;
+	
 	function Kiosk_Data_Query() {
 		$this->__construct();
 	}
@@ -15,8 +18,13 @@ class Kiosk_Data_Query {
 	}
 	
 	function setParams($params) {
-		$data =& Kiosk_data();
-		$data->apply($this, $params, true);
+		foreach ($params as $key => $value) {
+			if (is_integer($key)) {
+				$this->$value = true;
+			} else {
+				$this->$key = $value;
+			}
+		}
 	}
 	
 	function paramsToCollect() {
@@ -30,6 +38,10 @@ class Kiosk_Data_Query {
 	}
 	
 	function params() {
+		if ($this->first) {
+			$this->limit = 1;
+		}
+		
 		$data =& Kiosk_data();
 		return $data->collect($this, $this->paramsToCollect());
 	}

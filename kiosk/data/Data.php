@@ -34,8 +34,12 @@ class Kiosk_Data {
 			'return Kiosk_load(CLASS, $id, $params);');
 		
 		$this->defineFunction(
-			$class, 'find', '$params=array()', 
-			'return Kiosk_find(CLASS, $params);');
+			$class, 'find', '$query=array()', 
+			'return Kiosk_find(CLASS, $query);');
+		
+		$this->defineFunction(
+			$class, 'query', '$params=array()', 
+			'return Kiosk_query(CLASS, $params);');
 	}
 	
 	function defineFunction($class, $action, $params, $body) {
@@ -172,9 +176,14 @@ class Kiosk_Data {
 		return $schema->load($id, $params);
 	}
 	
-	function find(&$class, $params) {
+	function find(&$class, $query) {
 		$schema =& $this->schema($class);
-		return $schema->find($params);
+		return $schema->find($query);
+	}
+	
+	function query(&$class, $params) {
+		$schema =& $this->schema($class);
+		return $schema->createQuery($params);
 	}
 	
 	function save(&$obj) {
