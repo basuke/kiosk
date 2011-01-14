@@ -42,7 +42,7 @@ class Kiosk extends KioskObject {
 	*/
 	function app($dir) {
 		require_once KIOSK_LIB_DIR. '/app/App.php';
-		return new Kiosk_App($dir);
+		return new Kiosk_App_App($dir);
 	}
 	
 	/*
