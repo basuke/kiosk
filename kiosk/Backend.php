@@ -73,16 +73,20 @@ class Kiosk_Backend {
 		}
 	}
 	
-	function &singleton($class) {
-		if (!isset($this->_singleton[$class])) {
+	function &singleton($class, $label=null) {
+		if (is_null($label)) {
+			$label = $class;
+		}
+		
+		if (!isset($this->_singleton[$label])) {
 			if (!class_exists($class)) {
 				return trigger_error(KIOSK_ERROR_CONFIG. "{$class} class not exists");
 			}
 			
-			$this->_singleton[$class] = & new $class();
+			$this->_singleton[$label] = & new $class();
 		}
 		
-		return $this->_singleton[$class];
+		return $this->_singleton[$label];
 	}
 	
 }

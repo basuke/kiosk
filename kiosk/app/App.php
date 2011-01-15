@@ -124,23 +124,29 @@ class Kiosk_App_App {
 		
 		$smarty->template_dir = APP_VIEWS_DIR;
 		$smarty->compile_dir  = APP_TMP_DIR. '/templates/';
-		$smarty->config_dir   = APP_CONFIG_DIR. '/';
+		$smarty->config_dir   = APP_VIEWS_DIR. '/config/';
 		$smarty->cache_dir    = APP_CACHE_DIR. '/';
-		$smarty->plugins_dir = array('plugins', APP_LIBS_DIR. '/smarty-plugins');
+		$smarty->plugins_dir = array('plugins');
+		$smarty->default_template_handler_func = array($this, 'missingTemplate');
 		
 		$smarty->caching = false;
-		
-		$smarty->assign('server', $_SERVER);
 		
 		foreach ($vars as $key=>$value) {
 			$smarty->assign($key, $value);
 		}
 		
 		if (DEVELOPMENT) {
-			$smarty->assign('debug', Debug::debugInfo());
+			$smarty->assign('debug', Debug::getInstance());
 		}
 		
 		$smarty->display($path);
 	}
+	
+	function missingTemplate($type, $name, $source, $timestamp, $smarty) {
+		return false;
+	}
+}
+
+class KioskApp extends Kiosk_App_App {
 }
 
