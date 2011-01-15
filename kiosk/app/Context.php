@@ -125,7 +125,7 @@ class Kiosk_App_Context {
 		$app =& Kiosk::app();
 		
 		if (! $app->loadController($this->controller)) {
-			return array();
+			$this->setHTTPStatus(404, 'File not found.');
 		}
 		
 		return $app->runController($this);

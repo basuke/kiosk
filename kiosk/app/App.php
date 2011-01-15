@@ -71,7 +71,7 @@ class Kiosk_App_App {
 		return $this->controllersDir(). $controller. '.php';
 	}
 	
-	function runController($context) {
+	function runController(&$context) {
 		$controller = $context->controller;
 		$action = $context->action;
 		
@@ -87,9 +87,9 @@ class Kiosk_App_App {
 			}
 			
 			if (is_callable(array($c, $action))) {
-				$c->$action();
-				return (array) $c;
+				$c->$action($context);
 			}
+			return (array) $c;
 		}
 		
 		return null;
@@ -97,7 +97,7 @@ class Kiosk_App_App {
 	
 	// View ====================================
 	
-	function viewPath($context) {
+	function viewPath(&$context) {
 		$controller = $context->controller;
 		$action = $context->action;
 		$type = $context->type;
