@@ -82,14 +82,27 @@ class Kiosk_App_App {
 		
 		if (class_exists($controller)) {
 			$c =& new $controller();
-			foreach ((array) $context as $key=>$value) {
+			
+			$before = (array) $context;
+			
+			foreach ($before as $key=>$value) {
+				if (is_null($value)) continue;
+				
 				$c->$key = $value;
 			}
 			
 			if (is_callable(array($c, $action))) {
 				$c->$action($context);
 			}
-			return (array) $c;
+			
+			$result = array();
+			foreach ((array) $c as $key => $value) {
+				if (!isset($before[$key]) or $before[$key] !== $value) {
+					$result[$key] = $value;
+				}
+			}
+			
+			return $result;
 		}
 		
 		return null;
@@ -120,23 +133,11 @@ class Kiosk_App_App {
 	}
 	
 	function render($path, $vars) {
-		$smarty = new Smarty();
-		
-		$smarty->template_dir = APP_VIEWS_DIR;
-		$smarty->compile_dir  = APP_TMP_DIR. '/templates/';
-		$smarty->config_dir   = APP_VIEWS_DIR. '/config/';
-		$smarty->cache_dir    = APP_CACHE_DIR. '/';
-		$smarty->plugins_dir = array('plugins');
-		$smarty->default_template_handler_func = array($this, 'missingTemplate');
-		
-		$smarty->caching = false;
+		require_once KIOSK_LIB_DIR. '/app/Smarty.php';
+		$smarty = new KioskSmarty();
 		
 		foreach ($vars as $key=>$value) {
 			$smarty->assign($key, $value);
-		}
-		
-		if (DEVELOPMENT) {
-			$smarty->assign('debug', Debug::getInstance());
 		}
 		
 		$smarty->display($path);
