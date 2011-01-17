@@ -23,6 +23,7 @@ class Kiosk_Backend {
 	var $_data;
 	var $_config = array(
 		'nameConversion' => false, // inflectorを使った名前の変換を行うか？
+		'simpletest' => '', 
 	);
 	var $_singleton = array();
 	
@@ -59,6 +60,13 @@ class Kiosk_Backend {
 				return "nameConversion requires CakePHP's Inflector class";
 			}
 		}
+	}
+	
+	function simpletestCheck($value) {
+		require_once KIOSK_LIB_DIR. '/test/Test.php';
+		
+		$test =& $this->singleton('Kiosk_Test_Test');
+		return $test->setupSimpletest($value);
 	}
 	
 	function &data() {
