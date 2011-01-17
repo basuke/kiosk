@@ -3,6 +3,7 @@
 class Kiosk_Data_Schema {
 	var $class;		// クラス名
 	var $finalized;	// 正規化したか？
+	var $afterLoad;	// ロード後に実行するフィルター
 	
 	function Kiosk_Data_Schema($class, &$source, $params) {
 		$this->__construct($class, $source, $params);
@@ -71,7 +72,7 @@ class Kiosk_Data_Schema {
 		
 		assert('is_a($query, "Kiosk_Data_Query")');
 		
-		$rows = $query->fetch();
+		$rows = $this->findWithQuery($query);
 		
 		if ($query->raw) {
 			if ($query->first) {
@@ -82,6 +83,7 @@ class Kiosk_Data_Schema {
 		}
 		
 		$objects = $this->rowsToObjects($rows, $query);
+		
 		if ($this->afterLoad) {
 			$this->applyFilter($objects, $this->afterLoad);
 		}
@@ -93,39 +95,25 @@ class Kiosk_Data_Schema {
 		return $objects;
 	}
 	
+	function findWithQuery(&$query) {
+		return array();
+	}
+	
 	function rowsToObjects($rows, &$query) {
 		$objects = array();
 		
 		foreach ($rows as $key=>$row) {
 			$columns = $this->rowToColumns($row, $query);
-			$objects[$key] = $this->createObject($columns);
-		}
-		
-		foreach ($this->refersTo as $assoc) {
-			if (empty($assoc->load)) continue;
+			if (is_null($columns)) continue;
 			
-			$objects = $assoc->loadForObjects($objects);
+			$objects[$key] = $this->createObject($columns);
 		}
 		
 		return $objects;
 	}
 	
 	function rowToColumns($row, &$query) {
-		$columns = array();
-		$values = array_values($row);
-		
-		foreach ($row as $key => $value) {
-			if (strpos($key, '.') !== false) {
-				$col = $query->parseColumn($key);
-				$value = $col->valueForColumn($value);
-				$key = $col->columnName();
-			} else {
-				$key = $this->objectColumnName($key);
-			}
-			$columns[$key] = $value;
-		}
-		
-		return $columns;
+		return $row;
 	}
 	
 	// query の生成
@@ -142,6 +130,58 @@ class Kiosk_Data_Schema {
 		$query->setParams($params);
 		
 		return $query;
+	}
+	
+	// カラム名に関するメソッド
+	// native = データソース側
+	// object = オブジェクト側
+	
+	function nativeColumnName($name) {
+		if (isset($this->db_columns[$name])) {
+			return $this->db_columns[$name];
+		}
+		
+		$assoc = $this->associationWithName($name);
+		if ($assoc and $assoc->hasColumnInOrigin()) {
+			return $assoc->column;
+		}
+		
+		if (in_array($name, array_keys($this->table->describe()))) {
+			return $name;
+		}
+		
+		return null;
+	}
+	
+	function fullNativeColumnName($name) {
+		$name = $this->nativeColumnName($name);
+		if (!$name) return null;
+		
+		return $this->table->fullColumnName($name);
+	}
+	
+	function resolveColumnNamePath($path, &$associations) {
+		assert('is_array($path)');
+		assert('count($path) >= 1');
+		assert('is_array($associations)');
+		
+		$name = array_shift($path);
+		if (empty($path)) {
+			return $this->fullNativeColumnName($name);
+		}
+		
+		$assoc =& $this->associationWithName($name);
+		if (!$assoc) return false;
+		
+		$associations[$name] = $assoc;
+		
+		return $assoc->schema->resolveColumnNamePath($path, $associations);
+	}
+	
+	function objectColumnName($name) {
+		if (empty($this->obj_columns[$name])) return $name;
+		
+		return $this->obj_columns[$name];
 	}
 	
 }

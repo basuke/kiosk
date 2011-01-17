@@ -31,13 +31,17 @@ class Kiosk_Data_Source_File_Schema extends Kiosk_Data_Schema {
 	/*
 		オブジェクトを検索する
 	*/
-	function find($params) {
+	function findWithQuery(&$query) {
 		$items = array();
 		foreach ($this->readItems() as $columns) {
-			$items[] = $this->createObject($columns);
+			$items[] = $columns;
 		}
 		
 		return $items;
+	}
+	
+	function rowToColumns($row, &$query) {
+		return $row;
 	}
 	
 	/*

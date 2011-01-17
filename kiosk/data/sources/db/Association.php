@@ -152,9 +152,9 @@ class Kiosk_HasOneAssociation extends Kiosk_HasManyAssociation {
 	
 	function joinCondition() {
 		$pkey = $this->origin_schema->table->primaryKeyName();
-		$key = $this->origin_schema->fullTableColumnName($pkey);
+		$key = $this->origin_schema->fullNativeColumnName($pkey);
 		
-		$value = $this->schema->fullTableColumnName($this->column);
+		$value = $this->schema->fullNativeColumnName($this->column);
 		
 		return array($key => $value);
 	}

@@ -19,6 +19,13 @@ class Kiosk_Data_Source_DB_Query extends Kiosk_Data_Query {
 		$this->language = new Kiosk_Data_DB_SQL();
 	}
 	
+	function setSchema(&$schema) {
+		parent::setSchema($schema);
+		
+		$this->setTable($schema->table->name);
+		$this->setDatabase($schema->table->db);
+	}
+	
 	function setDatabase(&$db) {
 		$this->db =& $db;
 		$this->language = $db->language;
@@ -126,7 +133,6 @@ class Kiosk_Data_Source_DB_Query extends Kiosk_Data_Query {
 }
 
 class Kiosk_Data_SchemaQuery extends Kiosk_Data_Source_DB_Query {
-	var $schema;
 
 	// parsed
 	
@@ -135,20 +141,13 @@ class Kiosk_Data_SchemaQuery extends Kiosk_Data_Source_DB_Query {
 	var $parsed_having = null;
 	var $parsed_order = null;
 	
-	function setSchema(&$schema) {
-		$this->schema =& $schema;
-		
-		$this->setTable($schema->table->name);
-		$this->setDatabase($schema->table->db);
-	}
-	
 	function params() {
 		$this->parsed_columns = $this->parseColumns($this->columns);
 		$this->columns = null;
 		
 		$columns = array();
 		foreach ($this->parsed_columns as $col) {
-			$name = $col->tableColumnName;
+			$name = $col->nativeColumnName;
 			
 			$name .= ' AS '. $this->language->quoteName($col->name);
 			
@@ -199,12 +198,12 @@ class Kiosk_Data_SchemaQuery extends Kiosk_Data_Source_DB_Query {
 	
 	function parseColumns($columns) {
 		if (empty($columns) or $columns == '*') {
-			$columns = $this->schema->columns;
+			$columns = $this->_schema->columns;
 		}
 		
 		assert('is_array($columns)');
 		
-		$columns = array_merge($columns, $this->schema->referenceColumns());
+		$columns = array_merge($columns, $this->_schema->referenceColumns());
 		$result = array();
 		
 		foreach (array_unique($columns) as $key) {
@@ -224,7 +223,9 @@ class Kiosk_Data_SchemaQuery extends Kiosk_Data_Source_DB_Query {
 	function parseConditionKey($key, $value) {
 		list($key, $not, $op) = parent::parseConditionKey($key, $value);
 		
-		$key = $this->schema->fullTableColumnName($key);
+		if ($this->_schema) {
+			$key = $this->_schema->fullNativeColumnName($key);
+		}
 		
 		return array($key, $not, $op);
 	}
@@ -255,13 +256,13 @@ class Kiosk_Data_SchemaQuery extends Kiosk_Data_Source_DB_Query {
 			$this->addJoin($assoc);
 		}
 		
-		return array($col->tableColumnName, $reverse);
+		return array($col->nativeColumnName, $reverse);
 	}
 	
 	function parseColumn($name) {
-		$col = new Kiosk_Data_SchemaQueryColumn($this->schema, $name);
+		$col = new Kiosk_Data_SchemaQueryColumn($this->_schema, $name);
 		
-		if (empty($col->tableColumnName)) {
+		if (empty($col->nativeColumnName)) {
 			trigger_error(KIOSK_ERROR_CONFIG. "column '{$key}' doesn't exists");
 			return null;
 		}
@@ -273,18 +274,18 @@ class Kiosk_Data_SchemaQuery extends Kiosk_Data_Source_DB_Query {
 class Kiosk_Data_SchemaQueryColumn {
 	var $path;
 	var $associations = array();
-	var $tableColumnName;
+	var $nativeColumnName;
 	
 	function Kiosk_Data_SchemaQueryColumn(&$schema, $name) {
 		$this->__construct($schema, $name);
 	}
 	
 	function __construct(&$schema, $name) {
-		$this->schema =& $schema;
+		$this->_schema =& $schema;
 		$this->name = $name;
 		$this->path = explode('.', $name);
 		
-		$this->tableColumnName =  $this->schema->resolveColumnNamePath($this->path, $this->associations);
+		$this->nativeColumnName =  $this->_schema->resolveColumnNamePath($this->path, $this->associations);
 	}
 	
 	function columnName() {

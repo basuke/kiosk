@@ -55,7 +55,7 @@ class Kiosk_Schema extends Kiosk_Data_Schema {
 		$values = array();
 		
 		foreach ((array) $obj as $key => $value) {
-			$column = $this->tableColumnName($key);
+			$column = $this->nativeColumnName($key);
 			if (! $column) continue;
 			
 			if (is_object($value)) {
@@ -79,7 +79,7 @@ class Kiosk_Schema extends Kiosk_Data_Schema {
 	
 	// column name conversion and get information
 	
-	function tableColumnName($name) {
+	function nativeColumnName($name) {
 		if (isset($this->db_columns[$name])) {
 			return $this->db_columns[$name];
 		}
@@ -96,8 +96,8 @@ class Kiosk_Schema extends Kiosk_Data_Schema {
 		return null;
 	}
 	
-	function fullTableColumnName($name) {
-		$name = $this->tableColumnName($name);
+	function fullNativeColumnName($name) {
+		$name = $this->nativeColumnName($name);
 		if (!$name) return null;
 		
 		return $this->table->fullColumnName($name);
@@ -110,7 +110,7 @@ class Kiosk_Schema extends Kiosk_Data_Schema {
 		
 		$name = array_shift($path);
 		if (empty($path)) {
-			return $this->fullTableColumnName($name);
+			return $this->fullNativeColumnName($name);
 		}
 		
 		$assoc =& $this->associationWithName($name);
@@ -181,6 +181,45 @@ class Kiosk_Schema extends Kiosk_Data_Schema {
 	
 	function load($id, $params) {
 		return trigger_error(KIOSK_ERROR_CONFIG. "cannot load {$class} / no primary key");
+	}
+	
+	function findWithQuery(&$query) {
+		return $query->fetch();
+	}
+	
+	function rowsToObjects($rows, &$query) {
+		$objects = array();
+		
+		foreach ($rows as $key=>$row) {
+			$columns = $this->rowToColumns($row, $query);
+			$objects[$key] = $this->createObject($columns);
+		}
+		
+		foreach ($this->refersTo as $assoc) {
+			if (empty($assoc->load)) continue;
+			
+			$objects = $assoc->loadForObjects($objects);
+		}
+		
+		return $objects;
+	}
+	
+	function rowToColumns($row, &$query) {
+		$columns = array();
+		$values = array_values($row);
+		
+		foreach ($row as $key => $value) {
+			if (strpos($key, '.') !== false) {
+				$col = $query->parseColumn($key);
+				$value = $col->valueForColumn($value);
+				$key = $col->columnName();
+			} else {
+				$key = $this->objectColumnName($key);
+			}
+			$columns[$key] = $value;
+		}
+		
+		return $columns;
 	}
 	
 	function save(&$obj) {

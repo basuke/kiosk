@@ -1,7 +1,7 @@
 <?php
 
 /**
-	Association class is to handle variaous association operation between two tables.
+	Association class is to handle variaous association operation between two schemas.
 */
 
 class Kiosk_Data_Association {

@@ -1,6 +1,8 @@
 <?php
 
 class Kiosk_Data_Query {
+	var $_schema;
+	
 	var $columns = '*';
 	var $conditions = null;
 	var $order = null;
@@ -15,6 +17,10 @@ class Kiosk_Data_Query {
 	}
 	
 	function __construct() {
+	}
+	
+	function setSchema(&$schema) {
+		$this->_schema =& $schema;
 	}
 	
 	function setParams($params) {
