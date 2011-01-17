@@ -108,7 +108,7 @@ class Kiosk_App_Context {
 		
 		$vars = (array) $this;
 		
-		if ($this->layout) {
+		if (file_exists(APP_VIEWS_DIR. "/layouts/{$this->layout}.html")) {
 			$app->render("layouts/{$this->layout}.html", $vars);
 		} else {
 			$app->render($this->view, $vars);
@@ -125,7 +125,7 @@ class Kiosk_App_Context {
 		$app =& Kiosk::app();
 		
 		if (! $app->loadController($this->controller)) {
-			$this->setHTTPStatus(404, 'File not found.');
+			return array();
 		}
 		
 		return $app->runController($this);
