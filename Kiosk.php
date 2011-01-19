@@ -14,6 +14,10 @@ define('KIOSK_PHP_4', !KIOSK_PHP_5);
 define('KIOSK_HAS_REAL_CLASS', KIOSK_PHP_5_3);
 define('KIOSK_HAS_EXCEPTION', KIOSK_PHP_5);
 
+if (defined('E_DEPRECATED')) {
+	error_reporting(error_reporting() & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+}
+
 require_once KIOSK_LIB_DIR. '/data/Object.php';
 require_once KIOSK_LIB_DIR. '/Backend.php';
 
@@ -40,10 +44,10 @@ class Kiosk extends KioskObject {
 	
 	/*
 	*/
-	function &app($dir = null) {
+	function &app($dir = null, $class='KioskApp') {
 		require_once KIOSK_LIB_DIR. '/app/App.php';
 		
-		$app =& $GLOBALS['_Kiosk_Backend']->singleton('Kiosk_App_App');
+		$app =& $GLOBALS['_Kiosk_Backend']->singleton($class, 'KioskApp');
 		if ($dir) $app->setAppDir($dir);
 		
 		return $app;

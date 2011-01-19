@@ -14,7 +14,7 @@
  	 *	@param $temporally 一時的な転送か？
  	 *	@access public
  	 */
-	function renderRedirectResponse($url, $temporally=false) {
+	function sendRedirectHeader($url, $temporally=false) {
 		$status = ($temporally ? 302 : 301);
 		$msg = "moved ". ($temporally ? 'temporally' : 'permanently');
 		

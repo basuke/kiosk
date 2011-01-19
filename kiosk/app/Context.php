@@ -8,7 +8,10 @@ class Kiosk_App_Context {
 	var $layout = 'default';
 	var $title = null;
 	var $status = 200;
-	var $redirect_url = null;
+	
+	var $_redirect_url = null;
+	var $_route_result = null;
+	var $_controller_result = null;
 	
 	function Kiosk_App_Context() {
 		$this->__construct();
@@ -19,9 +22,16 @@ class Kiosk_App_Context {
 	}
 	
 	function apply($params) {
+		$applied = array();
+		
 		foreach ($params as $key => $value) {
+			if (! preg_match('/^\\w+$/', $key)) continue;
+			
 			$this->$key = $value;
+			$applied[$key] = $value;
 		}
+		
+		return $applied;
 	}
 	
 	// Request
@@ -38,10 +48,39 @@ class Kiosk_App_Context {
 		return ($this->isPOST() ? $_POST : $_GET);
 	}
 	
+	// Result
+	
+	function routeResult() {
+		return $this->_route_result;
+	}
+	
+	function setRouteResult($result) {
+		$this->_route_result = $this->apply($result);
+	}
+	
+	function controllerResult() {
+		return $this->_controller_result;
+	}
+	
+	function setControllerResult($result) {
+		$this->_controller_result = $this->apply($result);
+	}
+	
+	function variables() {
+		$vars = array();
+		
+		foreach ((array) $this as $key=>$value) {
+			if ($key[0] == '_') continue;
+			$vars[$key] = $value;
+		}
+		
+		return $vars;
+	}
+	
 	// Redirect
 	
 	function redirectTo($url, $temporally=true) {
-		$this->redirect_url = $url;
+		$this->_redirect_url = $url;
 		$this->status = ($temporally ? 302 : 301);
 	}
 	
@@ -63,72 +102,15 @@ class Kiosk_App_Context {
 	
 	function dispatch() {
 		$app =& Kiosk::app();
+		$app->route($this->url, $this);
 		
-		$route = $app->route($this->url);
-		if ($route) {
-			// ルーティングの結果で情報をアップデート
-			$this->apply($route);
-			
-			if (! $this->action) {
-				$this->action = 'index';
-			}
-			
-			// コントローラを実行
-			if ($this->controller) {
-				$result = $this->handleController();
-				if ($result) {
-					if ($this->type == 'json') {
-						header('Content-Type: application/json');
-						json_response($result);
-						exit(0);
-					}
-					
-					// コントローラの結果で情報をアップデート
-					$this->apply($result);
-				}
-			}
-		} else {
-			$this->setHTTPStatus(404, 'File not found.');
-		}
-		
-		// 準備オッケー
-		Debug::log('will start rendering views');
-		
-		if ($this->redirect_url) {
+		if ($this->_redirect_url) {
 			$http = Kiosk::util('HTTP');
-			$http->sendRedirectHeader($this->redirect_url, $this->status == 302);
+			$http->sendRedirectHeader($this->_redirect_url, $this->status == 302);
 			exit(0);
 		}
 		
-		$this->view = $app->viewPath($this);
-		if (file_exists(APP_VIEWS_DIR. '/'. $this->view) == false) {
-			Debug::log(LOG_ERR, "view file {$this->view} not found in views.");
-			$this->setHTTPStatus(404, 'File not found');
-		}
-		
-		$vars = (array) $this;
-		
-		if ($this->layout) {
-			$app->render("layouts/{$this->layout}.html", $vars);
-		} else {
-			$app->render($this->view, $vars);
-			
-			if (DEVELOPMENT) {
-				$app->render('elements/debug_console.html', $vars);
-			}
-		}
-		
-		Debug::log('finished rendering views');
-	}
-	
-	function handleController() {
-		$app =& Kiosk::app();
-		
-		if (! $app->loadController($this->controller)) {
-			return array();
-		}
-		
-		return $app->runController($this);
+		$app->renderResponse($this);
 	}
 }
 
