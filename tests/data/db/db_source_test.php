@@ -1,12 +1,13 @@
 <?php
 
 require_once 'Kiosk.php';
-require_once KIOSK_HOME. '/tests/data/sample.php';
+require_once KIOSK_HOME. '/tests/samples/DB.php';
+require_once KIOSK_HOME. '/tests/samples/Classes.php';
 
 class Kiosk_DB_Source_TestCase extends UnitTestCase {
 	function testSinglePK() {
 		$db =& open_test_database();
-		sample_schema1($db);
+		sample_database_schemaq($db);
 		Kiosk_reset();
 		
 		// 準備

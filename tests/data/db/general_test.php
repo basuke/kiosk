@@ -5,7 +5,7 @@ require_once 'Kiosk.php';
 class Kiosk_DB_General_TestCase extends UnitTestCase {
 	function testFactory() {
 		$db = Kiosk::database('sqlite');
-		$this->assertIsA($db, 'Kiosk_DB_Driver_SQLite');
+		$this->assertIsA($db, 'Kiosk_Data_Source_DB_SQLite');
 	}
 	
 	function testEmptyDriverError() {

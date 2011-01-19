@@ -1,8 +1,8 @@
 <?php
 
-require_once KIOSK_LIB_DIR. '/data/sources/db/Driver.php';
+require_once KIOSK_LIB_DIR. '/data/sources/DB.php';
 
-class Kiosk_DB_Driver_SQLite extends Kiosk_DB_Driver {
+class Kiosk_Data_Source_DB_SQLite extends Kiosk_Data_Source_DB {
 	var $_types = array(
 		'INTEGER' => 'integer', 
 		'TEXT' => 'string', 

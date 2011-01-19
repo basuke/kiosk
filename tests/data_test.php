@@ -1,7 +1,8 @@
 <?php
 
 require_once 'Kiosk.php';
-require_once KIOSK_HOME. '/tests/data/sample.php';
+require_once KIOSK_HOME. '/tests/samples/DB.php';
+require_once KIOSK_HOME. '/tests/samples/Classes.php';
 
 function _require_kiosk_test($path) {
 	foreach (glob($path) as $path) {
@@ -45,7 +46,7 @@ class Kiosk_Data_TestCase extends Kiosk_BaseData_TestCase {
 		$this->db =& open_test_database();
 		$db =& $this->db;
 		
-		sample_schema1($db);
+		sample_database_schemaq($db);
 		
 		// setup Kiosk classes
 		

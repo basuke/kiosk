@@ -20,7 +20,7 @@ class Kiosk_Data_Source_TestCase extends UnitTestCase {
 		));
 		
 		$source =& Kiosk::source('default');
-		$this->assertIsA($source, 'Kiosk_DB_Driver');
+		$this->assertIsA($source, 'Kiosk_Data_Source_DB');
 		
 		Kiosk::source('another', array(
 			'type' => 'file', 
