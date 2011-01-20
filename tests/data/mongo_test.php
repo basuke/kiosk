@@ -13,13 +13,25 @@ class Kiosk_Mongo_TestCase extends UnitTestCase {
 			'mongo', 
 			array(
 				'type' => 'Mongo', 
-				'dbname'=> $dbname
+				'dbname'=> $dbname, 
 			)
 		);
 		
 		User::bind($source, array());
 		
-		$this->assertEqual(count(User::find()), 3);
+		// すべてのオブジェクトを取得
+		$users = User::find();
+		$this->assertEqual(count($users), 3);
+		$this->assertIsA($users[0], 'User');
+		
+		// Jiroを検索
+		$users = User::find(array(
+			'conditions'=>array(
+				'name' => 'Jiro', 
+			), 
+		));
+		$this->assertEqual(count($users), 1);
+		$this->assertEqual($users[0]->name, 'Jiro');
 	}
 }
 

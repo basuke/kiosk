@@ -1,9 +1,8 @@
 <?php
 
 require_once KIOSK_LIB_DIR. '/data/Source.php';
-require_once KIOSK_LIB_DIR. '/data/sources/db/Schema.php';
 
-require_once KIOSK_LIB_DIR. '/data/sources/DB.php';
+require_once KIOSK_LIB_DIR. '/data/sources/db/Schema.php';
 require_once KIOSK_LIB_DIR. '/data/sources/db/Table.php';
 require_once KIOSK_LIB_DIR. '/data/sources/db/SQL.php';
 
@@ -54,7 +53,7 @@ class Kiosk_Data_Source_DB extends Kiosk_Data_Source {
 	var $language;
 	var $tables = array();
 	
-	function __construct($config=array()) {
+	function __construct($config) {
 		$this->config = $config;
 		$this->language = $this->language();
 		

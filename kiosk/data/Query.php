@@ -3,7 +3,7 @@
 class Kiosk_Data_Query {
 	var $_schema;
 	
-	var $columns = '*';
+	var $columns = array();
 	var $conditions = null;
 	var $order = null;
 	var $limit = 0;
