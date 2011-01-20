@@ -1,5 +1,7 @@
 <?php
 
+require_once dirname(dirname(__FILE__)). '/Kiosk.php';
+
 require_once 'Console/Getopt.php';
 
 $opt  = new Console_Getopt();
@@ -30,8 +32,8 @@ require_once dirname(__FILE__). '/config.php';
 if (! defined('SIMPLETEST')) {
 	define('SIMPLETEST', '../simpletest-1.0.1');
 }
-
 require_once SIMPLETEST. '/autorun.php';
+require_once KIOSK_LIB_DIR. '/test/TextReporter.php';
 
 class AllTests extends TestSuite {
 	function AllTests() {
@@ -59,7 +61,4 @@ function file_explicitly_specified($file) {
 	return false;
 }
 
-
-require_once dirname(dirname(__FILE__)). '/Kiosk.php';
-require_once KIOSK_LIB_DIR. '/test/TextReporter.php';
 
