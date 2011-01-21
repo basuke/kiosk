@@ -3,6 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+=================
 Kioskドキュメント
 =================
 
@@ -11,6 +12,7 @@ Kioskドキュメント
 .. toctree::
    :maxdepth: 2
 
+-----------------
 Kiosk Data とは？
 -----------------
 
@@ -46,6 +48,57 @@ Kioskの特徴は、取得した値を使いやすくすること、コードの
 		}
 	}
 
+--------------------------------
+Kioskがサポートするデータソース
+--------------------------------
+
+Kioskは、一般的なデータベースからデータを読み込むのが一般的ですが、それ以外に
+以下のデータソースをサポートしています。
+
+データベース
++++++++++++++
+
+PostgreSQL, MySQL, Sqliteをサポートします。また、PDOをサポートしているので、
+PDOに対応するその他のデータベースも使うことが出来ます。
+
+データベースでは、参照を使うことが出来ます。参照を使うと以下のような記述が
+使用可能になります。::
+
+	<?php
+	
+	// Userテーブルと1:1の関連を持つResultテーブルのscore値でソートする
+	
+	$users = User::find(array(
+		'order' => '-result.score'
+	));
+	
+	// UserがrefersToの関連を持つGroupテーブルのscore値を条件に検索する
+	
+	$users = User::find(array(
+		'conditions' => array('group.name' => 'Techno')
+	));
+	
+
+MongoDB
+++++++++
+
+KioskはMongoDBをネイティブでサポートします。
+
+ファイル
+++++++++
+
+CSVなどの構造化されたファイルであれば、データソースとして使用することが出来ます。
+
+-------
+設定
+-------
+
+Kiosk dataを使うためには、データソースとオブジェクトを結びつける必要が
+あります。
+
+
+
+-----------------
 PHP 5.3 以前では
 -----------------
 
