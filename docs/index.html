@@ -80,6 +80,46 @@
 </pre></div>
 </div>
 </div>
+<div class="section" id="id1">
+<h2>Kioskがサポートするデータソース<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>Kioskは、一般的なデータベースからデータを読み込むのが一般的ですが、それ以外に
+以下のデータソースをサポートしています。</p>
+<div class="section" id="id2">
+<h3>データベース<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>PostgreSQL, MySQL, Sqliteをサポートします。また、PDOをサポートしているので、
+PDOに対応するその他のデータベースも使うことが出来ます。</p>
+<p>データベースでは、参照を使うことが出来ます。参照を使うと以下のような記述が
+使用可能になります。:</p>
+<div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
+
+<span class="c1">// Userテーブルと1:1の関連を持つResultテーブルのscore値でソートする</span>
+
+<span class="nv">$users</span> <span class="o">=</span> <span class="nx">User</span><span class="o">::</span><span class="na">find</span><span class="p">(</span><span class="k">array</span><span class="p">(</span>
+        <span class="s1">&#39;order&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;-result.score&#39;</span>
+<span class="p">));</span>
+
+<span class="c1">// UserがrefersToの関連を持つGroupテーブルのscore値を条件に検索する</span>
+
+<span class="nv">$users</span> <span class="o">=</span> <span class="nx">User</span><span class="o">::</span><span class="na">find</span><span class="p">(</span><span class="k">array</span><span class="p">(</span>
+        <span class="s1">&#39;conditions&#39;</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;group.name&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;Techno&#39;</span><span class="p">)</span>
+<span class="p">));</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="mongodb">
+<h3>MongoDB<a class="headerlink" href="#mongodb" title="Permalink to this headline">¶</a></h3>
+<p>KioskはMongoDBをネイティブでサポートします。</p>
+</div>
+<div class="section" id="id3">
+<h3>ファイル<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>CSVなどの構造化されたファイルであれば、データソースとして使用することが出来ます。</p>
+</div>
+</div>
+<div class="section" id="id4">
+<h2>設定<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<p>Kiosk dataを使うためには、データソースとオブジェクトを結びつける必要が
+あります。</p>
+</div>
 <div class="section" id="php-5-3">
 <h2>PHP 5.3 以前では<a class="headerlink" href="#php-5-3" title="Permalink to this headline">¶</a></h2>
 <p>残念ながら、PHP 5.3以前のクラスには大きな制約があり、前のサンプルのようには
@@ -122,6 +162,13 @@ Kioskは利便性を最大の目標に掲げています。言ってみれば、
   <ul>
 <li><a class="reference internal" href="#">Kioskドキュメント</a><ul>
 <li><a class="reference internal" href="#kiosk-data">Kiosk Data とは？</a></li>
+<li><a class="reference internal" href="#id1">Kioskがサポートするデータソース</a><ul>
+<li><a class="reference internal" href="#id2">データベース</a></li>
+<li><a class="reference internal" href="#mongodb">MongoDB</a></li>
+<li><a class="reference internal" href="#id3">ファイル</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id4">設定</a></li>
 <li><a class="reference internal" href="#php-5-3">PHP 5.3 以前では</a></li>
 </ul>
 </li>
