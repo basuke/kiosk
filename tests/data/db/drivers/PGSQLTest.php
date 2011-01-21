@@ -13,7 +13,7 @@ function pgsql_config() {
 	return $config;
 }
 
-class PGSQLDBTest extends CommonDBTestCase {
+class Kiosk_Data_PGSQLSourceTestCase extends CommonDBTestCase {
     function skip() {
     	$this->skipUnless(file_explicitly_specified(basename(__FILE__)));
     }

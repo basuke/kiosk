@@ -2,7 +2,7 @@
 
 require_once KIOSK_LIB_DIR. '/app/Router.php';
 
-class Kiosk_App_Router_TestCase extends UnitTestCase {
+class Kiosk_App_RouterTestCase extends UnitTestCase {
 	function testBasic() {
 		$router = new Kiosk_App_Router();
 		

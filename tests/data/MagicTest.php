@@ -5,7 +5,7 @@ require_once 'Kiosk.php';
 class Kiosk_Magic_Mock extends Kiosk {
 }
 
-class Kiosk_Magic_TestCase extends UnitTestCase {
+class Kiosk_Data_MagicTestCase extends UnitTestCase {
 	function testBasic() {
 		$db = Kiosk::database('sqlite');
 		

@@ -2,7 +2,7 @@
 
 require_once 'Kiosk.php';
 
-class Kiosk_DB_General_TestCase extends UnitTestCase {
+class Kiosk_Data_DBGeneralTestCase extends UnitTestCase {
 	function testFactory() {
 		$db = Kiosk::database('sqlite');
 		$this->assertIsA($db, 'Kiosk_Data_Source_DB_SQLite');

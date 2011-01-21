@@ -3,7 +3,7 @@
 require_once KIOSK_HOME. '/tests/samples/Mongo.php';
 require_once KIOSK_HOME. '/tests/samples/Classes.php';
 
-class Kiosk_Mongo_TestCase extends UnitTestCase {
+class Kiosk_Data_MongoSourceTestCase extends UnitTestCase {
 	function testBasicCrud() {
 		$sample = new SampleMongoEnv();
 		$sample->env1();

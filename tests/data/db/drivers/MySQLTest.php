@@ -13,7 +13,7 @@ function mysql_config() {
 	return $config;
 }
 
-class MySQLDBConnectionTest extends UnitTestCase {
+class Kiosk_Data_MySQLDBConnectionTestCase extends UnitTestCase {
     function skip() {
     	$this->skipUnless(file_explicitly_specified(basename(__FILE__)));
     }
@@ -31,7 +31,7 @@ class MySQLDBConnectionTest extends UnitTestCase {
 	
 }
 
-class MySQLDBTest extends CommonDBTestCase {
+class Kiosk_Data_MySQLSourceTestCase extends CommonDBTestCase {
     function skip() {
     	$this->skipUnless(file_explicitly_specified(basename(__FILE__)));
     }

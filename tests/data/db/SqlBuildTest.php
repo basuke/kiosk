@@ -2,7 +2,7 @@
 
 require_once 'kiosk/data/sources/db/SQL.php';
 
-class DBSqlBuildTestCase extends UnitTestCase {
+class Kiosk_Data_DBSqlTestCase extends UnitTestCase {
 	function testLiterals() {
 		$lang = new Kiosk_Data_DB_SQL();
 		

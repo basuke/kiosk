@@ -2,7 +2,7 @@
 
 require_once 'Kiosk.php';
 
-class Kiosk_Namer_TestCase extends UnitTestCase {
+class Kiosk_NamerTestCase extends UnitTestCase {
 	function testPluralize() {
 		$namer = new Kiosk_Namer();
 		

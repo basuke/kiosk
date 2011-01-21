@@ -14,7 +14,7 @@ require_once 'Kiosk.php';
 class MockFileEntity extends Kiosk {
 }
 
-class Kiosk_Data_FileSource_TestCase extends UnitTestCase {
+class Kiosk_Data_FileSourceTestCase extends UnitTestCase {
 	var $tmp_path;
 	
 	function setUp() {

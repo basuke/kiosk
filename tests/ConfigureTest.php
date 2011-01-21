@@ -15,7 +15,7 @@ class Kiosk_MockBackend extends Kiosk_Backend {
 	}
 }
 
-class Kiosk_Configure_TestCase extends UnitTestCase {
+class Kiosk_ConfigureTestCase extends UnitTestCase {
 	function testBasic() {
 		$backend = new Kiosk_MockBackend();
 		

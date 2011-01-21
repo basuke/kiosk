@@ -22,7 +22,7 @@ class Kiosk_Callable_TestMock {
 	}
 }
 
-class Kiosk_Callable_TestCase extends UnitTestCase {
+class Kiosk_CallableTestCase extends UnitTestCase {
 	function testGlobalFunction() {
 		$func = Kiosk::func('strtolower');
 		

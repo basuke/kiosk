@@ -4,7 +4,7 @@ require_once 'Kiosk.php';
 require_once KIOSK_HOME. '/tests/samples/DB.php';
 require_once KIOSK_HOME. '/tests/samples/Classes.php';
 
-class Kiosk_DB_Source_TestCase extends UnitTestCase {
+class Kiosk_Data_DBSourceTestCase extends UnitTestCase {
 	function testSinglePK() {
 		$db =& open_test_database();
 		sample_database_schemaq($db);

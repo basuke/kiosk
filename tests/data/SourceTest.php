@@ -10,7 +10,7 @@
 
 require_once 'Kiosk.php';
 
-class Kiosk_Data_Source_TestCase extends UnitTestCase {
+class Kiosk_Data_SourceTestCase extends UnitTestCase {
 	function testBasic() {
 		Kiosk_reset();
 		

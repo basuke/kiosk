@@ -10,7 +10,7 @@ function sqlite_config() {
 	return $config;
 }
 
-class SQLiteDBTest extends CommonDBTestCase {
+class Kiosk_Data_SQLiteSourceTestCase extends CommonDBTestCase {
 	function setUp() {
 		$this->db = Kiosk::database('sqlite', sqlite_config());
 		

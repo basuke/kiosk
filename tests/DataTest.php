@@ -18,7 +18,9 @@ _require_kiosk_test(dirname(__FILE__). '/data/*');
 
 // Base class
 
-class Kiosk_BaseData_TestCase extends UnitTestCase {
+// General usage
+
+class Kiosk_DataTestCase extends UnitTestCase {
 	function setUp() {
 		Kiosk_reset();
 		
@@ -35,11 +37,7 @@ class Kiosk_BaseData_TestCase extends UnitTestCase {
 		
 		Kiosk_reset();
 	}
-}
-
-// General usage
-
-class Kiosk_Data_TestCase extends Kiosk_BaseData_TestCase {
+	
 	function env1() {
 		Kiosk_reset();
 		
