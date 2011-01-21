@@ -6,6 +6,7 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
+INSTALLDIR    = ..
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -13,6 +14,8 @@ PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest
+
+all: html install
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -40,6 +43,11 @@ html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+install:
+	rsync -av --delete --exclude=src --exclude=.buildinfo --exclude=*.inv $(BUILDDIR)/html/ $(INSTALLDIR)/
+	@echo
+	@echo "Install finished. The HTML pages are in $(INSTALLDIR)/"
 
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
