@@ -254,3 +254,6 @@ epub_copyright = u'2011, Yosuke "Basuke" Suzuki'
 
 # Allow duplicate toc entries.
 #epub_tocdup = True
+
+# コードブロックの言語
+highlight_language = 'php'

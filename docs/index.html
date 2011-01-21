@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Welcome to Kiosk’s documentation! &mdash; Kiosk v0.5 documentation</title>
+    <title>Kioskドキュメント &mdash; Kiosk v0.5 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -40,21 +40,76 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="welcome-to-kiosk-s-documentation">
-<h1>Welcome to Kiosk&#8217;s documentation!<a class="headerlink" href="#welcome-to-kiosk-s-documentation" title="Permalink to this headline">¶</a></h1>
-<p>Contents:</p>
+  <div class="section" id="kiosk">
+<h1>Kioskドキュメント<a class="headerlink" href="#kiosk" title="Permalink to this headline">¶</a></h1>
+<p>目次:</p>
 <div class="toctree-wrapper compound">
 <ul class="simple">
 </ul>
 </div>
+<div class="section" id="kiosk-data">
+<h2>Kiosk Data とは？<a class="headerlink" href="#kiosk-data" title="Permalink to this headline">¶</a></h2>
+<p>Kiosk dataはPHPのためのデータ層へのアクセスライブラリです。よく使われる言葉で
+言えば <strong>O/Rマッパー</strong> とか <strong>パーシスタントレイヤー（永続化層）</strong> とか呼ばれる
+たぐいのものです。もしあなたが <strong>CakePHP</strong> を使っているなら、 <strong>モデル</strong> と
+呼んでいる部分がそれに当たるかもしれません。ともかく、データベースから
+データを呼び出したり、検索、保存することに使えます。</p>
+<p>Kioskの特徴は、取得した値を使いやすくすること、コードの記述量を減らすことを
+最大の目的にしています。</p>
+<p>簡単な使い方を見てみましょう。設定が終わっているとして:</p>
+<div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
+
+<span class="c1">// 表示可能なUserオブジェクトを年齢降順で表示する</span>
+
+<span class="nv">$users</span> <span class="o">=</span> <span class="nx">User</span><span class="o">::</span><span class="na">find</span><span class="p">(</span><span class="k">array</span><span class="p">(</span>
+        <span class="s1">&#39;conditions&#39;</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;hidden&#39;</span><span class="o">=&gt;</span><span class="k">false</span><span class="p">),</span>
+        <span class="s1">&#39;order&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;-age&#39;</span>
+<span class="p">));</span>
+
+<span class="k">foreach</span> <span class="p">(</span><span class="nv">$users</span> <span class="k">as</span> <span class="nv">$user</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// $user 配列ではなくはUserクラスのオブジェクト</span>
+
+        <span class="k">echo</span> <span class="nv">$user</span><span class="o">-&gt;</span><span class="na">name</span><span class="p">,</span> <span class="s1">&#39;: &#39;</span><span class="p">,</span> <span class="nv">$user</span><span class="o">-&gt;</span><span class="na">age</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+
+        <span class="c1">// オブジェクトなので当然メソッドも呼び出せる</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nv">$user</span><span class="o">-&gt;</span><span class="na">isActive</span><span class="p">())</span> <span class="p">{</span>
+                <span class="o">...</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
 </div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="php-5-3">
+<h2>PHP 5.3 以前では<a class="headerlink" href="#php-5-3" title="Permalink to this headline">¶</a></h2>
+<p>残念ながら、PHP 5.3以前のクラスには大きな制約があり、前のサンプルのようには
+動作させられません。そこでKioskは、自動的にグローバルな関数を定義することで
+この問題に対処しています。 <em>クラス名</em>::<em>メソッド</em> に相当する
+<em>クラス名</em>_<em>メソッド</em> を定義します。先の例は、以下のようにも書けます:</p>
+<div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
+
+<span class="c1">// 関数を使ってUserクラスにアクセス</span>
+
+<span class="nv">$users</span> <span class="o">=</span> <span class="nx">User_find</span><span class="p">(</span><span class="k">array</span><span class="p">(</span>
+        <span class="s1">&#39;conditions&#39;</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;hidden&#39;</span><span class="o">=&gt;</span><span class="k">false</span><span class="p">),</span>
+        <span class="s1">&#39;order&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;-age&#39;</span>
+<span class="p">));</span>
+</pre></div>
+</div>
+<p>グローバル関数を定義することについて、非難の声が避けられないのは覚悟しています。
+Kioskは利便性を最大の目標に掲げています。言ってみれば、クラスを定義することも
+グローバルな名前を一つ確保することと変わりません。その名前をプレフィックスとして
+持つ関数を定義することには、それほど名前空間を汚すことには当たらないと考えます。</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">なお、この関数の自動登録機能は、設定で無効にすることも出来ます。</p>
+</div>
 <ul class="simple">
 <li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
 <li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
 <li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
 </ul>
+</div>
 </div>
 
 
@@ -65,10 +120,11 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Welcome to Kiosk&#8217;s documentation!</a><ul>
+<li><a class="reference internal" href="#">Kioskドキュメント</a><ul>
+<li><a class="reference internal" href="#kiosk-data">Kiosk Data とは？</a></li>
+<li><a class="reference internal" href="#php-5-3">PHP 5.3 以前では</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 
   <h3>This Page</h3>
