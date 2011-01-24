@@ -1,15 +1,17 @@
 <?php
 
 class Kiosk_Schema_DB_SinglePrimaryKey extends Kiosk_Schema {
-	var $primaryKey;
-	
 	function finalize() {
 		parent::finalize();
 	}
 	
 	function primaryKeyName() {
-		if ($this->primaryKey) return $this->primaryKey;
-		return $this->table->primaryKeyName();
+		$name = parent::primaryKeyName();
+		if ($name) {
+			return $name;
+		}
+		
+		return 'id';
 	}
 	
 	function conditionForPrimaryKey($id) {
@@ -73,36 +75,37 @@ class Kiosk_Schema_DB_SinglePrimaryKey extends Kiosk_Schema {
 	function save(&$obj) {
 		$id = $this->getId($obj);
 		
+		// 保存前に行う処理を実行する
+		$this->_beforeSave($this, $obj);
+		
 		// 新規保存か？
-		if (is_null($id)) {
-			// 初期値を埋める
-			$data =& Kiosk_data();
-			$data->apply($obj, $this->defaultValues(), false);
-			
-			// 保存前に行う処理を実行する
-			$this->_beforeSave($this, $obj);
-			
-			// 保存用の値のハッシュを取得する
-			$columns = $this->collectValues($obj, Kiosk_INCLUDE_PRIMARY_KEYS);
-			
-			// テーブルに保存
-			$success = $this->table->insert($columns);
-			if (!$success) {
-				return trigger_error(KIOSK_ERROR_RUNTIME. 'insert failed');
-			}
-			
-			// 新規IDをオブジェクトにセット
-			$this->setId($obj, $this->table->lastId());
-		} else {
-			// 保存前に行う処理を実行する
-			$this->_beforeSave($this, $obj);
-			
+		if (! is_null($id)) {
 			$columns = $this->collectValues($obj, Kiosk_WITHOUT_PRIMARY_KEYS);
 			
-			$this->table->update($columns, $this->conditionForPrimaryKey($id));
+			$cond = $this->conditionForPrimaryKey($id);
+			$success = $this->table->update($columns, $cond);
+			if ($success) return true;
 		}
 		
-		return true;
+		// 初期値を埋める
+		$data =& Kiosk_data();
+		$data->apply($obj, $this->defaultValues(), false);
+		
+		// 保存用の値のハッシュを取得する
+		$columns = $this->collectValues($obj, Kiosk_INCLUDE_PRIMARY_KEYS);
+		
+		// テーブルに保存
+		$success = $this->table->insert($columns);
+		if ($success) {
+			if (is_null($id)) {
+				// 新規IDをオブジェクトにセット
+				$this->setId($obj, $this->table->lastId());
+			}
+			
+			return true;
+		}
+		
+		return trigger_error(KIOSK_ERROR_RUNTIME. 'insert failed');
 	}
 	
 	function destroy(&$obj) {

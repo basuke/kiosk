@@ -11,6 +11,8 @@ class Kiosk_Schema extends Kiosk_Data_Schema {
 	var $name;		// テーブル名
 	var $table;		// テーブルオブジェクト
 	
+	var $primaryKey;	// プライマリーキーのカラム名
+	
 	var $columns;	// カラム定義。実際にはdb_columnsとobj_columnsにマップを作る
 	
 	var $db_columns;	// キーがオブジェクトのカラム名で値がDBのカラム名のマッピング
@@ -20,19 +22,45 @@ class Kiosk_Schema extends Kiosk_Data_Schema {
 		return 'Kiosk_Data_SchemaQuery';
 	}
 	
+	function primaryKeyName() {
+		if ($this->primaryKey) {
+			return $this->primaryKey;
+		}
+		
+		$name = $this->table->primaryKeyName();
+		if ($name) {
+			return $name;
+		}
+		
+		return null;
+	}
+	
 	// id
 	
 	function isSaved($obj) {
-		return !empty($obj->id);
+		$pk = $this->primaryKeyName();
+		if (! $pk) return false;
+		
+		return !empty($obj->$pk);
 	}
 	
 	function getId($obj) {
-		if (empty($obj->id)) return null;
-		return $obj->id;
+		$pk = $this->primaryKeyName();
+		if (! $pk) return null;
+		
+		if (empty($obj->$pk)) return null;
+		
+		return $obj->$pk;
 	}
 	
 	function setId(&$obj, $id) {
-		$obj->id = $id;
+		$pk = $this->primaryKeyName();
+		if (! $pk) {
+			trigger_error(KIOSK_ERROR_CONFIG. "No primary key in schema {$this->name}");
+			return;
+		}
+		
+		$obj->$pk = $id;
 	}
 	
 	// column value

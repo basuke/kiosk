@@ -187,11 +187,16 @@ class Kiosk_App_App {
 				$c->$key = $value;
 			}
 			
+			$result = null;
+			
 			if (is_callable(array($c, $action))) {
-				$c->$action($context);
+				$result = $c->$action($context);
 			}
 			
-			$result = array();
+			if (! is_array($result)) {
+				$result = array();
+			}
+			
 			foreach ((array) $c as $key => $value) {
 				if (!isset($before[$key]) or $before[$key] !== $value) {
 					$result[$key] = $value;
