@@ -32,12 +32,12 @@ class Kiosk_Data_Source_Mongo extends Kiosk_Data_Source {
 			$params['name'] = $namer->classNameToTableName($class);
 		}
 		
-		$schema = new Kiosk_Data_Source_Mongo_Schema($class, $this, $params);
+		$schema = new Kiosk_Data_Schema_Mongo($class, $this, $params);
 		return $schema;
 	}
 }
 
-class Kiosk_Data_Source_Mongo_Schema extends Kiosk_Data_Schema {
+class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 	var $collection;
 	
 	function __construct($class, $source, $params) {
@@ -53,11 +53,24 @@ class Kiosk_Data_Source_Mongo_Schema extends Kiosk_Data_Schema {
 		オブジェクトを保存する
 	*/
 	function save($obj) {
+		$data = (array) $obj;
+		
+		if (!empty($data['id'])) {
+			$data['_id'] = new MongoId($data['id']);
+			unset($data['id']);
+		}
+		
+		$this->collection->save($data);
+		
+		if (empty($obj->id)) {
+			$obj->id = strval($data['_id']);
+		}
+		
+		echo "mongo save\n";
 	}
 	
-	function createQuery($params) {
-		$query = parent::createQuery($params);
-		return $query;
+	function queryClass() {
+		return 'Kiosk_Data_Query_Mongo';
 	}
 	
 	/*
@@ -78,5 +91,8 @@ class Kiosk_Data_Source_Mongo_Schema extends Kiosk_Data_Schema {
 	function rowToColumns($row, $query) {
 		return $row;
 	}
+}
+
+class Kiosk_Data_Query_Mongo extends Kiosk_Data_Query {
 }
 

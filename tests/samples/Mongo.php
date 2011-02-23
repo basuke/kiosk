@@ -1,27 +1,62 @@
 <?php
 
 class SampleMongoEnv {
-	var $users = array(
+	public $users = array(
 		array('name' => 'Taro', 'age' => 40, 'tags' => array()), 
 		array('name' => 'Jiro', 'age' => 45, 'tags' => array('iPhone')), 
 		array('name' => 'Saburo', 'age' => 30, 'tags' => array('Mac', 'iPod')), 
 	);
 	
-	var $dbname = 'kioskTest';
+	public $dbname = 'kioskTest';
+	public $mongo;
+	
+	public function __construct($env=null) {
+		$this->mongo = new Mongo();
+		
+		if ($env) {
+			$this->$env();
+		}
+	}
 	
 	function db() {
-		$mongo = new Mongo();
-		
 		$dbname = $this->dbname;
-		return $mongo->$dbname;
+		return $this->mongo->$dbname;
+	}
+	
+	function collection($name) {
+		return $this->db()->$name;
+	}
+	
+	function load($colletion, $id) {
+		$query = array('_id' => new MongoId($id));
+		return $this->collection($colletion)->findOne($query);
+	}
+	
+	function source() {
+		$dbname = $this->dbname;
+		
+		$source = Kiosk::source(
+			'mongo', 
+			array(
+				'type' => 'Mongo', 
+				'dbname'=> $dbname, 
+			)
+		);
+		
+		return $source;
 	}
 	
 	function env1() {
-		$db = $this->db();
+		$collection = $this->collection('user');
 		
-		$db->user->drop();
+		$collection->drop();
+		
+		$this->ids = array();
+		
 		foreach ($this->users as $user) {
-			$db->user->insert($user);
+			$collection->insert($user);
+			
+			$this->ids[] = strval($user['_id']);
 		}
 	}
 }
