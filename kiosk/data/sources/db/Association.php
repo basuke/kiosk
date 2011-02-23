@@ -65,6 +65,10 @@ class Kiosk_RefersToAssociation extends Kiosk_Association {
 			'columns' => $this->columns, 
 		);
 		
+		//	以下のワーニングを防ぐための処置
+		//	「Indirect modification of overloaded property 
+		//				Item::$user has no effect in ... 」
+		$obj->$name = null;
 		$obj->$name =& $this->schema->load($id, $params);
 		
 		return $obj->$name;

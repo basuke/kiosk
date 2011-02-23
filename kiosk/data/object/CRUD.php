@@ -103,5 +103,12 @@ class Kiosk_Object_CRUD {
 	function paramsToFetch($name) {
 		return Kiosk_paramsToFetch($this, $name);
 	}
+	
+	/*
+		オブジェクトの値を参照された
+	*/
+	function __get($name) {
+		return null;
+	}
 }
 
