@@ -1,55 +1,50 @@
 <?php
 
-class SampleMongoEnv {
+class SampleMongo {
 	public $users = array(
 		array('name' => 'Taro', 'age' => 40, 'tags' => array()), 
 		array('name' => 'Jiro', 'age' => 45, 'tags' => array('iPhone')), 
 		array('name' => 'Saburo', 'age' => 30, 'tags' => array('Mac', 'iPod')), 
 	);
 	
-	public $dbname = 'kioskTest';
-	public $mongo;
+	public $dbname = 'test';
+	public $source;
 	
-	public function __construct($env=null) {
-		$this->mongo = new Mongo();
-		
-		if ($env) {
-			$this->$env();
-		}
+	public function __construct() {
+		$this->source = Kiosk::source(
+			'mongo', 
+			array(
+				'type' => 'Mongo', 
+				'dbname'=> $this->dbname, 
+			)
+		);
 	}
 	
-	function db() {
-		$dbname = $this->dbname;
-		return $this->mongo->$dbname;
+	public function db() {
+		return $this->source->db;
 	}
 	
-	function collection($name) {
+	public function cleanup() {
+		$collection = $this->collection('user');
+		$collection->drop();
+	}
+	
+	public function collection($name) {
 		return $this->db()->$name;
 	}
 	
-	function load($colletion, $id) {
+	public function load($colletion, $id) {
 		$query = array('_id' => new MongoId($id));
 		return $this->collection($colletion)->findOne($query);
 	}
 	
-	function source() {
-		$dbname = $this->dbname;
-		
-		$source = Kiosk::source(
-			'mongo', 
-			array(
-				'type' => 'Mongo', 
-				'dbname'=> $dbname, 
-			)
-		);
-		
-		return $source;
+	public function all($collection, $params=array()) {
+		$cursor = $this->collection($collection)->find($params);
+		return iterator_to_array($cursor);
 	}
 	
-	function env1() {
+	public function env1() {
 		$collection = $this->collection('user');
-		
-		$collection->drop();
 		
 		$this->ids = array();
 		
