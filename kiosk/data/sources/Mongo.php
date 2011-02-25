@@ -104,6 +104,20 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 		}
 	}
 	
+	public function destroy($obj) {
+		$id = $obj->id;
+		if (is_null($id)) {
+			return trigger_error(KIOSK_ERROR_RUNTIME. 'cannnot destroy unsaved object');
+		}
+		
+		// テーブルから削除
+		$this->collection->remove(array('_id' => new MongoId($id)));
+		
+		// オブジェクトIDをnullにセット
+		$obj->id = null;
+		return true;
+	}
+	
 	public function queryClass() {
 		return 'Kiosk_Data_Query_Mongo';
 	}

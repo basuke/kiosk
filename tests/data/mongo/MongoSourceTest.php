@@ -49,6 +49,20 @@ class Kiosk_Data_MongoSourceSimpleTestCase extends UnitTestCase {
 		$this->assertEqual($raw_data['age'], $user->age);
 	}
 	
+	public function testDestroy() {
+		// ユーザーの準備
+		$this->sample->env1();
+		
+		$this->assertEqual(count(User::find()), 3);
+		
+		$id = $this->sample->ids[0];
+		
+		$user = User::load($id);
+		$user->destroy();
+		$this->assertNull($user->id);
+		$this->assertEqual(count(User::find()), 2);
+	}
+	
 	function testBasicFind() {
 		// ユーザーの準備
 		$this->sample->env1();
