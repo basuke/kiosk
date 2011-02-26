@@ -150,13 +150,17 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 }
 
 class Kiosk_Data_Query_Mongo extends Kiosk_Data_Query {
-	function buildCondition($key, $op, $value) {
+	public function buildCondition($key, $op, $value) {
+		$cmd = ini_get('mongo.cmd');
+		
 		switch ($op) {
 			case 'IN':
-				return array($key => array('$in' => $value));
+				return array($key => array($cmd. 'in' => $value));
+				
 			case '=':
 				return array($key => $value);
 		}
+		
 		return array($op => array($key, $value));
 	}
 }
