@@ -4,7 +4,7 @@ class SampleMongo {
 	public $users = array(
 		array('name' => 'Taro', 'age' => 40, 'tags' => array()), 
 		array('name' => 'Jiro', 'age' => 45, 'tags' => array('iPhone')), 
-		array('name' => 'Saburo', 'age' => 30, 'tags' => array('Mac', 'iPod')), 
+		array('name' => 'Saburo', 'age' => 30, 'tags' => array('Mac', 'iPod', 'iPhone')), 
 	);
 	
 	public $dbname = 'test';

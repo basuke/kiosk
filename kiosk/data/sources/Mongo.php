@@ -147,6 +147,16 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 		
 		return $row;
 	}
+	
+	public function countWithQuery($query) {
+		$conditions = $query->conditions;
+		if (! $conditions) $conditions = array();
+		
+		$conditions = $query->parseConditions($query->conditions);
+		if (! is_array($conditions)) $conditions = array();
+		
+		return $this->collection->find($conditions, array())->count();
+	}
 }
 
 class Kiosk_Data_Query_Mongo extends Kiosk_Data_Query {

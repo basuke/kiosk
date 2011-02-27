@@ -65,13 +65,18 @@ class Kiosk_Data_Query {
 	// conditions =============================
 	
 	function parseConditions($conditions, $or=false) {
+		if (is_null($conditions)) {
+			return null;
+		}
+		
 		if (is_string($conditions)) {
 			$conditions = array($conditions);
 		}
 		
 		if (is_array($conditions) == false) {
-			return trigger_error(KIOSK_ERROR_SYNTAX. 
+			trigger_error(KIOSK_ERROR_SYNTAX. 
 				sprintf("invalid condition '%s'", $conditions));
+			return null;
 		}
 		
 		$components = array();

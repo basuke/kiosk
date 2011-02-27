@@ -63,7 +63,7 @@ class Kiosk_Data_MongoSourceSimpleTestCase extends UnitTestCase {
 		$this->assertEqual(count(User::find()), 2);
 	}
 	
-	function testBasicFind() {
+	public function testBasicFind() {
 		// ユーザーの準備
 		$this->sample->env1();
 		
@@ -81,6 +81,23 @@ class Kiosk_Data_MongoSourceSimpleTestCase extends UnitTestCase {
 		
 		$this->assertEqual(count($users), 1);
 		$this->assertEqual($users[0]->name, 'Jiro');
+		
+		// iPhoneを検索
+	}
+	
+	public function testCount() {
+		// ユーザーの準備
+		$this->sample->env1();
+		
+		// すべてのオブジェクトの個数
+		$this->assertEqual(User::count(), 3);
+		
+		// Jiroを含む個数
+		$this->assertEqual(User::count(array(
+			'conditions'=>array(
+				'name' => 'Jiro', 
+			), 
+		)), 1);
 	}
 }
 
