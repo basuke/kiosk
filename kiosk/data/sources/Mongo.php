@@ -39,7 +39,7 @@ class Kiosk_Data_Source_Mongo extends Kiosk_Data_Source {
 
 class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 	protected $collection;
-	protected $columns = array();
+	public $columns = array();
 	
 	public function __construct($class, $source, $params) {
 		parent::__construct($class, $source, $params);
@@ -210,19 +210,25 @@ class Kiosk_Data_Query_Mongo extends Kiosk_Data_Query {
 		'<=' => 'lte',
 	);
 	
-	public function buildCondition($key, $op, $value) {
+	public function buildCondition($name, $op, $value) {
+		foreach ($this->_schema->columns as $key => $def) {
+			if ($name == $key) {
+				$name = $def['name'];
+			}
+		}
+		
 		if (!empty(self::$operators[$op])) {
 			$op = $this->mongoOp(self::$operators[$op]);
 			
-			return array($key => array($op => $value));
+			return array($name => array($op => $value));
 		}
 		
 		switch ($op) {
 			case '=':
-				return array($key => $value);
+				return array($name => $value);
 		}
 		
-		return array($op => array($key, $value));
+		return array($op => array($name, $value));
 	}
 	
 	public function joinConditions($conditions, $or) {

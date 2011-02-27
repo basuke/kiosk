@@ -189,11 +189,13 @@ class Kiosk_Data_MongoSourceSchemaTestCase extends UnitTestCase {
 			)
 		));
 		
+		// ロード時の変換がされていることを確認する
+		
 		$taro = User::load($ids[0]);
 		$this->assertEqual($taro->name, 'Taro');
 		$this->assertEqual($taro->age, 40);
 		
-		//
+		// セーブ時の変換がされていることを確認する
 		
 		$user = User::create();
 		$user->name = 'John';
@@ -203,6 +205,15 @@ class Kiosk_Data_MongoSourceSchemaTestCase extends UnitTestCase {
 		$raw_data = $this->sample->load('user', $user->id);
 		$this->assertEqual($raw_data['n'], 'John');
 		$this->assertEqual($raw_data['a'], 31);
+		
+		// 検索キーの値が変換されていることを確認する
+		
+		$users = User::find(array(
+			'conditions' => array(
+				'age >' => 30
+			),
+		));
+		$this->assertEqual(count($users), 4);
 	}
 }
 
