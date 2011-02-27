@@ -192,6 +192,17 @@ class Kiosk_Data_MongoSourceSchemaTestCase extends UnitTestCase {
 		$taro = User::load($ids[0]);
 		$this->assertEqual($taro->name, 'Taro');
 		$this->assertEqual($taro->age, 40);
+		
+		//
+		
+		$user = User::create();
+		$user->name = 'John';
+		$user->age = 31;
+		$user->save();
+		
+		$raw_data = $this->sample->load('user', $user->id);
+		$this->assertEqual($raw_data['n'], 'John');
+		$this->assertEqual($raw_data['a'], 31);
 	}
 }
 

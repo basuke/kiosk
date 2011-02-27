@@ -121,6 +121,15 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 			unset($data['id']);
 		}
 		
+		foreach ($this->columns as $key => $def) {
+			$name = $def['name'];
+			
+			if (isset($data[$key])) {
+				$data[$name] = $data[$key];
+				unset($data[$key]);
+			}
+		}
+		
 		$this->collection->save($data);
 		
 		if (empty($obj->id)) {
