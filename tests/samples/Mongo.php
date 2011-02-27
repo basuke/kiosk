@@ -6,7 +6,7 @@ class SampleMongo {
 		array('name' => 'Jiro', 'age' => 35, 'tags' => array('iPhone')), 
 		array('name' => 'Saburo', 'age' => 30, 'tags' => array('Mac', 'iPod', 'iPhone')), 
 		
-		array('name' => 'Hanako', 'age' => 32, 'female' => true), 
+		array('name' => 'Hanako', 'age' => 32, 'company' => array('name' => 'Kodansha', 'address' => 'Tokyo')), 
 		array('name' => 'Sachiko', 'age' => 28, 'female' => true), 
 		array('name' => 'Mei', 'age' => 5, 'female' => true, 'tags' => array('corn')), 
 	);
@@ -91,7 +91,7 @@ class SampleMongo {
 			'name' => 'n', 
 			'age' => 'a', 
 			'tags' => 't', 
-			'female' => 'f', 
+			'company' => 'c', 
 		);
 		return $this->bulkInsert('user', $data, $map);
 	}

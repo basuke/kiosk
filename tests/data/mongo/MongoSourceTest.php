@@ -20,7 +20,7 @@ class Kiosk_Data_MongoSourceCRUDTestCase extends UnitTestCase {
 		$this->assertIsA($user, 'User');
 		$this->assertNull($user->id);
 		
-		$user->name = 'Hanako';
+		$user->name = 'Mokeko';
 		$user->save();
 		$this->assertNotNull($user->id);
 		
@@ -40,7 +40,7 @@ class Kiosk_Data_MongoSourceCRUDTestCase extends UnitTestCase {
 	}
 	
 	public function testUpdate() {
-		$user = User::create(array('name'=>'Hanako', 'age'=>30));
+		$user = User::create(array('name'=>'Mokeko', 'age'=>30));
 		$user->save();
 		$id = $user->id;
 		
@@ -186,6 +186,10 @@ class Kiosk_Data_MongoSourceSchemaTestCase extends UnitTestCase {
 					'name' => 'a', 
 					'type' => 'integer', 
 				), 
+				'company' => array(
+					'name' => 'c', 
+					'type' => 'object', 
+				), 
 			)
 		));
 		
@@ -214,6 +218,14 @@ class Kiosk_Data_MongoSourceSchemaTestCase extends UnitTestCase {
 			),
 		));
 		$this->assertEqual(count($users), 4);
+		
+		$user = User::find(array(
+			'first', 
+			'conditions' => array(
+				'company.address' => 'Tokyo', 
+			),
+		));
+		$this->assertEqual($user->name, 'Hanako');
 	}
 }
 

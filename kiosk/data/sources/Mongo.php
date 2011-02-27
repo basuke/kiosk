@@ -199,6 +199,24 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 		
 		return $this->collection->find($conditions, array())->count();
 	}
+	
+	public function toDocumentColumnName($name) {
+		$pos = strpos($name, '.');
+		if ($pos !== false) {
+			return
+				$this->toDocumentColumnName(substr($name, 0, $pos)). 
+				substr($name, $pos);
+		}
+		
+		foreach ($this->columns as $key => $def) {
+			if ($name == $key) {
+				$name = $def['name'];
+				break;
+			}
+		}
+		
+		return $name;
+	}
 }
 
 class Kiosk_Data_Query_Mongo extends Kiosk_Data_Query {
@@ -211,11 +229,7 @@ class Kiosk_Data_Query_Mongo extends Kiosk_Data_Query {
 	);
 	
 	public function buildCondition($name, $op, $value) {
-		foreach ($this->_schema->columns as $key => $def) {
-			if ($name == $key) {
-				$name = $def['name'];
-			}
-		}
+		$name = $this->_schema->toDocumentColumnName($name);
 		
 		if (!empty(self::$operators[$op])) {
 			$op = $this->mongoOp(self::$operators[$op]);
