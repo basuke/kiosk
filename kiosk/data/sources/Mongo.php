@@ -194,7 +194,18 @@ class Kiosk_Data_Query_Mongo extends Kiosk_Data_Query {
 	}
 	
 	private function mergeArrays($arrays) {
-		return call_user_func_array('array_merge', $arrays);
+		$result = array();
+		foreach ($arrays as $hash) {
+			foreach ($hash as $key=>$value) {
+				if (empty($result[$key])) {
+					$result[$key] = $value;
+				} else {
+					$result[$key] = $this->mergeArrays(array($result[$key], $value));
+				}
+			}
+		}
+		
+		return $result;
 	}
 	
 	private function mongoOp($op) {

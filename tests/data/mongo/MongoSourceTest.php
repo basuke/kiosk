@@ -152,6 +152,14 @@ class Kiosk_Data_MongoSourceSimpleTestCase extends UnitTestCase {
 				'age <=' => 30, 
 			), 
 		)), 3);
+		
+		// 複合
+		$this->assertEqual(User::count(array(
+			'conditions'=>array(
+				'age >' => 30, 
+				'age <=' => 35, 
+			), 
+		)), 2);
 	}
 }
 
