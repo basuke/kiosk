@@ -63,7 +63,7 @@ class Kiosk_Data_MongoSourceSimpleTestCase extends UnitTestCase {
 		$this->assertEqual(count(User::find()), 2);
 	}
 	
-	public function testBasicFind() {
+	public function testFind() {
 		// ユーザーの準備
 		$this->sample->env1();
 		
@@ -82,7 +82,26 @@ class Kiosk_Data_MongoSourceSimpleTestCase extends UnitTestCase {
 		$this->assertEqual(count($users), 1);
 		$this->assertEqual($users[0]->name, 'Jiro');
 		
-		// iPhoneを検索
+		// TagでMacを検索
+		$users = User::find(array(
+			'conditions' => array(
+				'tags' => 'Mac'
+			),
+		));
+		
+		$this->assertEqual(count($users), 1);
+		$this->assertEqual($users[0]->name, 'Saburo');
+		
+		// 年齢が33歳以上で、TagにiPhoneを持つものを検索
+		$user = User::find(array(
+			'first', 
+			'conditions' => array(
+				'tags' => 'iPhone', 
+				'age >=' => 33,
+			),
+		));
+		
+		$this->assertEqual($user->name, 'Jiro');
 	}
 	
 	public function testCount() {

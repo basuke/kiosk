@@ -160,18 +160,43 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 }
 
 class Kiosk_Data_Query_Mongo extends Kiosk_Data_Query {
+	static private $operators = array(
+		'IN' => 'in', 
+		'>=' => 'gte',
+	);
+	
 	public function buildCondition($key, $op, $value) {
-		$cmd = ini_get('mongo.cmd');
+		if (!empty(self::$operators[$op])) {
+			$op = $this->mongoOp(self::$operators[$op]);
+			
+			return array($key => array($op => $value));
+		}
 		
 		switch ($op) {
-			case 'IN':
-				return array($key => array($cmd. 'in' => $value));
-				
 			case '=':
 				return array($key => $value);
 		}
 		
 		return array($op => array($key, $value));
+	}
+	
+	public function joinConditions($conditions, $or) {
+		assert('is_array($conditions)');
+		
+		if ($or) {
+			return array($this->mongoOp('or'), $conditions);
+		}
+		
+		return $this->mergeArrays($conditions);
+	}
+	
+	private function mergeArrays($arrays) {
+		return call_user_func_array('array_merge', $arrays);
+	}
+	
+	private function mongoOp($op) {
+		$cmd = ini_get('mongo.cmd');
+		return $cmd. $op;
 	}
 }
 
