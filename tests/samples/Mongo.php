@@ -49,17 +49,30 @@ class SampleMongo {
 		return iterator_to_array($cursor);
 	}
 	
-	public function bulkInsert($collection, $data) {
+	public function bulkInsert($collection, $data, $map = array()) {
 		$collection = $this->collection($collection);
 		$ids = array();
 		
 		foreach ($data as $entity) {
+			$entity = $this->mapEntity($entity, $map);
 			$collection->insert($entity);
 			
 			$ids[] = strval($entity['_id']);
 		}
 		
 		return $ids;
+	}
+	
+	public function mapEntity($entity, $map) {
+		$converted = array();
+		foreach ($entity as $key => $value) {
+			if (!empty($map[$key])) {
+				$key = $map[$key];
+			}
+			
+			$converted[$key] = $value;
+		}
+		return $converted;
 	}
 	
 	public function env1() {
@@ -70,6 +83,17 @@ class SampleMongo {
 	public function env2() {
 		$data= array_slice($this->users, 0, 6);
 		return $this->bulkInsert('user', $data);
+	}
+	
+	public function env3() {
+		$data= array_slice($this->users, 0, 6);
+		$map = array(
+			'name' => 'n', 
+			'age' => 'a', 
+			'tags' => 't', 
+			'female' => 'f', 
+		);
+		return $this->bulkInsert('user', $data, $map);
 	}
 }
 

@@ -3,7 +3,7 @@
 require_once KIOSK_HOME. '/tests/samples/Mongo.php';
 require_once KIOSK_HOME. '/tests/samples/Classes.php';
 
-class Kiosk_Data_MongoSourceSimpleTestCase extends UnitTestCase {
+class Kiosk_Data_MongoSourceCRUDTestCase extends UnitTestCase {
 	public function setUp() {
 		$this->sample = new SampleMongo();
 		$this->sample->cleanup();
@@ -160,6 +160,42 @@ class Kiosk_Data_MongoSourceSimpleTestCase extends UnitTestCase {
 				'age <=' => 35, 
 			), 
 		)), 2);
+	}
+}
+
+class Kiosk_Data_MongoSourceSchemaTestCase extends UnitTestCase {
+	public function setUp() {
+		$this->sample = new SampleMongo();
+		$this->sample->cleanup();
+		
+		$this->source = $this->sample->source;
+	}
+	
+	function testColumnMapping() {
+		// ユーザーの準備
+		$ids = $this->sample->env3();
+		
+		User::bind($this->source, array(
+			'columns' => array(
+				'name' => 'n', 
+				'age' => array(
+					'name' => 'a', 
+					'type' => 'integer', 
+				), 
+				'tags' => array(
+					'name' => 't', 
+					'type' => 'array', 
+				), 
+				'female' => array(
+					'name' => 'f', 
+					'type' => 'boolean', 
+				), 
+			)
+		));
+		
+		$taro = User::load($ids[0]);
+		$this->assertEqual($taro->name, 'Taro');
+		$this->assertEqual($taro->age, 40);
 	}
 }
 

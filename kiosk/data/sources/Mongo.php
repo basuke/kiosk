@@ -38,15 +38,39 @@ class Kiosk_Data_Source_Mongo extends Kiosk_Data_Source {
 }
 
 class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
-	var $collection;
+	protected $collection;
+	protected $columns = array();
 	
 	public function __construct($class, $source, $params) {
 		parent::__construct($class, $source, $params);
 		
-		$name = null;
 		extract($params);
 		
 		$this->collection = $source->db->$name;
+	}
+	
+	public function finalize() {
+		$columns = array();
+		
+		foreach ($this->columns as $key => $def) {
+			if (is_integer($key)) {
+				$key = $def;
+			}
+			
+			if (is_string($def)) {
+				$def = array(
+					'name' => $def, 
+				);
+			}
+			
+			if (empty($def['name'])) {
+				$def['name'] = $key;
+			}
+			
+			$columns[$key] = $def;
+		}
+		
+		$this->columns = $columns;
 	}
 	
 	/*
@@ -144,6 +168,15 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 	public function rowToColumns($row, $query) {
 		$row['id'] = strval($row['_id']);
 		unset($row['_id']);
+		
+		foreach ($this->columns as $key => $def) {
+			$name = $def['name'];
+			
+			if (isset($row[$name])) {
+				$row[$key] = $row[$name];
+				unset($row[$name]);
+			}
+		}
 		
 		return $row;
 	}
