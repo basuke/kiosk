@@ -5,6 +5,8 @@ require_once KIOSK_HOME. '/tests/samples/Classes.php';
 
 class Kiosk_Data_MongoSourceCRUDTestCase extends UnitTestCase {
 	public function setUp() {
+		Kiosk_reset();
+		
 		$this->sample = new SampleMongo();
 		$this->sample->cleanup();
 		
@@ -165,6 +167,8 @@ class Kiosk_Data_MongoSourceCRUDTestCase extends UnitTestCase {
 
 class Kiosk_Data_MongoSourceSchemaTestCase extends UnitTestCase {
 	public function setUp() {
+		Kiosk_reset();
+		
 		$this->sample = new SampleMongo();
 		$this->sample->cleanup();
 		
@@ -181,14 +185,6 @@ class Kiosk_Data_MongoSourceSchemaTestCase extends UnitTestCase {
 				'age' => array(
 					'name' => 'a', 
 					'type' => 'integer', 
-				), 
-				'tags' => array(
-					'name' => 't', 
-					'type' => 'array', 
-				), 
-				'female' => array(
-					'name' => 'f', 
-					'type' => 'boolean', 
 				), 
 			)
 		));
