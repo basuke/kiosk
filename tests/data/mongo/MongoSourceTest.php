@@ -28,9 +28,9 @@ class Kiosk_Data_MongoSourceSimpleTestCase extends UnitTestCase {
 	
 	public function testLoad() {
 		// ユーザーの準備
-		$this->sample->env1();
+		$ids = $this->sample->env1();
 		
-		$id = $this->sample->ids[0];
+		$id = $ids[0];
 		
 		$user = User::load($id);
 		$this->assertEqual($user->name, 'Taro');
@@ -51,11 +51,11 @@ class Kiosk_Data_MongoSourceSimpleTestCase extends UnitTestCase {
 	
 	public function testDestroy() {
 		// ユーザーの準備
-		$this->sample->env1();
+		$ids = $this->sample->env1();
 		
 		$this->assertEqual(count(User::find()), 3);
 		
-		$id = $this->sample->ids[0];
+		$id = $ids[0];
 		
 		$user = User::load($id);
 		$user->destroy();
@@ -117,6 +117,41 @@ class Kiosk_Data_MongoSourceSimpleTestCase extends UnitTestCase {
 				'name' => 'Jiro', 
 			), 
 		)), 1);
+	}
+	
+	public function testComparisonOperators() {
+		// ユーザーの準備
+		$this->sample->env2();
+		
+		$this->assertEqual(User::count(array(
+			'conditions'=>array(
+				'age =' => 30, 
+			), 
+		)), 1);
+		
+		$this->assertEqual(User::count(array(
+			'conditions'=>array(
+				'age >' => 30, 
+			), 
+		)), 3);
+		
+		$this->assertEqual(User::count(array(
+			'conditions'=>array(
+				'age >=' => 30, 
+			), 
+		)), 4);
+		
+		$this->assertEqual(User::count(array(
+			'conditions'=>array(
+				'age <' => 30, 
+			), 
+		)), 2);
+		
+		$this->assertEqual(User::count(array(
+			'conditions'=>array(
+				'age <=' => 30, 
+			), 
+		)), 3);
 	}
 }
 

@@ -5,6 +5,10 @@ class SampleMongo {
 		array('name' => 'Taro', 'age' => 40, 'tags' => array()), 
 		array('name' => 'Jiro', 'age' => 35, 'tags' => array('iPhone')), 
 		array('name' => 'Saburo', 'age' => 30, 'tags' => array('Mac', 'iPod', 'iPhone')), 
+		
+		array('name' => 'Hanako', 'age' => 32, 'female' => true), 
+		array('name' => 'Sachiko', 'age' => 28, 'female' => true), 
+		array('name' => 'Mei', 'age' => 5, 'female' => true, 'tags' => array('corn')), 
 	);
 	
 	public $dbname = 'test';
@@ -27,6 +31,8 @@ class SampleMongo {
 	public function cleanup() {
 		$collection = $this->collection('user');
 		$collection->drop();
+		
+		$this->ids = array();
 	}
 	
 	public function collection($name) {
@@ -43,16 +49,27 @@ class SampleMongo {
 		return iterator_to_array($cursor);
 	}
 	
-	public function env1() {
-		$collection = $this->collection('user');
+	public function bulkInsert($collection, $data) {
+		$collection = $this->collection($collection);
+		$ids = array();
 		
-		$this->ids = array();
-		
-		foreach ($this->users as $user) {
-			$collection->insert($user);
+		foreach ($data as $entity) {
+			$collection->insert($entity);
 			
-			$this->ids[] = strval($user['_id']);
+			$ids[] = strval($entity['_id']);
 		}
+		
+		return $ids;
+	}
+	
+	public function env1() {
+		$data= array_slice($this->users, 0, 3);
+		return $this->bulkInsert('user', $data);
+	}
+	
+	public function env2() {
+		$data= array_slice($this->users, 0, 6);
+		return $this->bulkInsert('user', $data);
 	}
 }
 

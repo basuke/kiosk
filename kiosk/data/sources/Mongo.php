@@ -162,7 +162,10 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 class Kiosk_Data_Query_Mongo extends Kiosk_Data_Query {
 	static private $operators = array(
 		'IN' => 'in', 
+		'>' => 'gt',
 		'>=' => 'gte',
+		'<' => 'lt',
+		'<=' => 'lte',
 	);
 	
 	public function buildCondition($key, $op, $value) {
