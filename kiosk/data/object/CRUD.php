@@ -34,6 +34,14 @@ function Kiosk_find($class, $query=array()) {
 }
 
 /* 
+	検索を行い条件にマッチするオブジェクトの個数を返す
+*/
+function Kiosk_count($class, $query=array()) {
+	$data =& Kiosk_data();
+	return $data->count($class, $query);
+}
+
+/* 
 	オブジェクトの検索を行うための条件オブジェクトを作成して返す
 */
 function Kiosk_query($class, $params=array()) {
