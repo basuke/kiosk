@@ -122,12 +122,45 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 		}
 		
 		foreach ($this->columns as $key => $def) {
+			if (!isset($data[$key])) {
+				continue;
+			}
+			
+			$value = $data[$key];
+			
+			if (isset($def['type'])) {
+				switch ($def['type']) {
+					case 'string':
+					case 'text':
+					case 'str':
+						$value = strval($value);
+						break;
+						
+					case 'integer':
+					case 'int':
+						$value = intval($value);
+						break;
+						
+					case 'double':
+					case 'float':
+						$value = floatval($value);
+						break;
+						
+					case 'boolean':
+					case 'bool':
+						$value = (bool)(preg_match('/^(on|true|yes)$/i', $value) or intval($value));
+						break;
+						
+					case 'array':
+						$value = (array) $value;
+						break;
+				}
+			}
+			
 			$name = $def['name'];
 			
-			if (isset($data[$key])) {
-				$data[$name] = $data[$key];
-				unset($data[$key]);
-			}
+			$data[$name] = $value;
+			unset($data[$key]);
 		}
 		
 		$this->collection->save($data);

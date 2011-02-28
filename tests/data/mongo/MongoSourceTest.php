@@ -175,7 +175,7 @@ class Kiosk_Data_MongoSourceSchemaTestCase extends UnitTestCase {
 		$this->source = $this->sample->source;
 	}
 	
-	function testColumnMapping() {
+	public function testColumnMapping() {
 		// ユーザーの準備
 		$ids = $this->sample->env3();
 		
@@ -226,6 +226,60 @@ class Kiosk_Data_MongoSourceSchemaTestCase extends UnitTestCase {
 			),
 		));
 		$this->assertEqual($user->name, 'Hanako');
+	}
+	
+	public function testColumnTyping() {
+		User::bind($this->source, array(
+			'columns' => array(
+				'name' => array(
+					'name' => 'n', 
+					'type' => 'string', 
+				), 
+				'age' => array(
+					'name' => 'a', 
+					'type' => 'integer', 
+				), 
+				'weight' => array(
+					'name' => 'w', 
+					'type' => 'double', 
+				), 
+				'marriaged' => array(
+					'name' => 'm', 
+					'type' => 'boolean', 
+				), 
+				'tags' => array(
+					'name' => 't', 
+					'type' => 'array', 
+				), 
+				'company' => array(
+					'name' => 'c', 
+					'type' => 'object', 
+				), 
+			)
+		));
+		
+		// セーブ時の変換がされていることを確認する
+		
+		$user = User::create();
+		$user->name = 12345;
+		$user->age = '31';
+		$user->weight = '60';
+		$user->marriaged = 'true';
+		$user->tags = 'iPhone'; // array の場合、値が配列に変換される
+		$user->save();
+		
+		$raw_data = $this->sample->load('user', $user->id);
+		$this->assertEqual($raw_data['n'], '12345');
+		$this->assertEqual($raw_data['a'], 31);
+		$this->assertEqual($raw_data['w'], 60.0);
+		$this->assertEqual($raw_data['m'], true);
+		$this->assertEqual($raw_data['t'], array('iPhone'));
+		
+		$this->assertTrue(is_string($raw_data['n']));
+		$this->assertTrue(is_integer($raw_data['a']));
+		$this->assertTrue(is_double($raw_data['w']));
+		$this->assertTrue(is_bool($raw_data['m']));
+		$this->assertTrue(is_array($raw_data['t']));
 	}
 }
 
