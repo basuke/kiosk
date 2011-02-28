@@ -280,6 +280,19 @@ class Kiosk_Data_MongoSourceSchemaTestCase extends UnitTestCase {
 		$this->assertTrue(is_double($raw_data['w']));
 		$this->assertTrue(is_bool($raw_data['m']));
 		$this->assertTrue(is_array($raw_data['t']));
+		
+		// オブジェクト型が指定されている場合に、
+		// nullかオブジェクト以外をセットするとエラーになる
+		
+		$user->company = null;
+		$user->save();	// 問題なし
+		
+		$user->company = array('name' => '10gen');
+		$user->save();	// 問題なし
+		
+		$user->company = '10gen';
+		$this->expectError();
+		$user->save();
 	}
 }
 

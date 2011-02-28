@@ -113,61 +113,19 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 	/*
 		オブジェクトを保存する
 	*/
-	public function save($obj) {
-		$data = (array) $obj;
-		
-		if (!empty($data['id'])) {
-			$data['_id'] = new MongoId($data['id']);
-			unset($data['id']);
+	public function save($entity) {
+		$doc = $this->entityToDocument($entity);
+		if (is_null($doc)) {
+			return false;
 		}
 		
-		foreach ($this->columns as $key => $def) {
-			if (!isset($data[$key])) {
-				continue;
-			}
-			
-			$value = $data[$key];
-			
-			if (isset($def['type'])) {
-				switch ($def['type']) {
-					case 'string':
-					case 'text':
-					case 'str':
-						$value = strval($value);
-						break;
-						
-					case 'integer':
-					case 'int':
-						$value = intval($value);
-						break;
-						
-					case 'double':
-					case 'float':
-						$value = floatval($value);
-						break;
-						
-					case 'boolean':
-					case 'bool':
-						$value = (bool)(preg_match('/^(on|true|yes)$/i', $value) or intval($value));
-						break;
-						
-					case 'array':
-						$value = (array) $value;
-						break;
-				}
-			}
-			
-			$name = $def['name'];
-			
-			$data[$name] = $value;
-			unset($data[$key]);
+		$this->collection->save($doc);
+		
+		if (empty($entity->id)) {
+			$entity->id = strval($doc['_id']);
 		}
 		
-		$this->collection->save($data);
-		
-		if (empty($obj->id)) {
-			$obj->id = strval($data['_id']);
-		}
+		return true;
 	}
 	
 	public function destroy($obj) {
@@ -249,6 +207,79 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 		}
 		
 		return $name;
+	}
+	
+	/*
+		エンティティをドキュメントに変換する。
+		ドキュメントの整合性をチェックを行い、失敗した場合は
+		'KIOSK:RUNTIME:VALIDATION_FAIL' エラーを起こし、nullを返す
+	*/
+	protected function entityToDocument($entity) {
+		$doc = (array) $entity;
+		
+		if (!empty($doc['id'])) {
+			$doc['_id'] = new MongoId($doc['id']);
+			unset($doc['id']);
+		}
+		
+		foreach ($this->columns as $key => $def) {
+			if (!isset($doc[$key])) {
+				continue;
+			}
+			
+			$value = $doc[$key];
+			
+			if (isset($def['type'])) {
+				switch ($def['type']) {
+					case 'string':
+					case 'text':
+					case 'str':
+						$value = strval($value);
+						break;
+						
+					case 'integer':
+					case 'int':
+						$value = intval($value);
+						break;
+						
+					case 'double':
+					case 'float':
+						$value = floatval($value);
+						break;
+						
+					case 'boolean':
+					case 'bool':
+						if (is_string($value)) {
+							if (ctype_digit($value)) {
+								$value = intval($value);
+							} else {
+								$value = preg_match('/^(on|true|yes)$/i', $value);
+							}
+						}
+						$value = (bool) $value;
+						break;
+						
+					case 'array':
+						$value = (array) $value;
+						break;
+						
+					case 'object':
+						if (!is_object($value) and !is_array($value)) {
+							trigger_error(KIOSK_ERROR_RUNTIME. 
+										'type mismatch');
+							return null;
+						}
+						break;
+				}
+			}
+			
+			$name = $def['name'];
+			
+			$doc[$name] = $value;
+			unset($doc[$key]);
+		}
+		
+		return $doc;
 	}
 }
 
