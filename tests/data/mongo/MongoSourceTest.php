@@ -384,5 +384,53 @@ class Kiosk_Data_MongoSourceReferencesTestCase extends UnitTestCase {
 		$item = Item::load($mba->id);
 		$this->assertEqual($item->user->name, 'Taro');
 	}
+	
+	public function testHasManyReference() {
+		// 構造の定義
+		
+		User::bind($this->source, array(
+			'columns' => array(
+				'items' => array(
+					'type' => 'hasMany', 
+					'class' => 'Item', 
+				), 
+			)
+		));
+		
+		Item::bind($this->source, array(
+			'columns' => array(
+				'user' => array(
+					'type' => 'User', // カラムはDBRef
+				), 
+			)
+		));
+		
+		// データの準備
+		
+		list($taro, ) = User::import(array('name' => 'Taro'));
+		
+		Item::import(array(
+			array('user' => $taro, 'title' => 'MacBook Air'), 
+			array('user' => $taro, 'title' => 'MacBook Pro'), 
+			array('user' => $taro, 'title' => 'iPhone'), 
+		));
+		
+		// ユーザーをロードする
+		
+		$item = Item::find(array(
+			'first', 
+			'conditions'=>array('title' => 'iPhone'), 
+		));
+		
+		$this->assertNotNull($item);
+		
+		$item->fetch('user');
+		$this->assertEqual($item->user->name, 'Taro');
+		
+		// ユーザーに関連するアイテムをロードする
+		
+		$items = $taro->fetch('items');
+//		$this->assertEqual(count($items), 3);
+	}
 }
 

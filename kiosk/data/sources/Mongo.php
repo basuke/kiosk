@@ -305,7 +305,14 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 				break;
 				
 			default:
-				$class = $def['type'];
+				if (is_a($value, 'MongoId')) {
+					$schema = $this->source->schemaForClass($def['type']);
+					$value = $schema->load($value, $params);
+				} else {
+					$value = $this->resolveDBRef($value);
+				}
+				
+				$entity->$name = $value;
 				break;
 		}
 		
