@@ -37,6 +37,14 @@ class Kiosk_Data_MongoSourceCRUDTestCase extends UnitTestCase {
 		$user = User::load($id);
 		$this->assertEqual($user->name, 'Taro');
 		$this->assertEqual($user->age, 40);
+		
+		// 複数をロード
+		$users = User::load($ids);
+		$this->assertEqual(count($users), 3);
+		
+		$user = $users[$ids[0]];
+		$this->assertEqual($user->name, 'Taro');
+		$this->assertEqual($user->age, 40);
 	}
 	
 	public function testUpdate() {
