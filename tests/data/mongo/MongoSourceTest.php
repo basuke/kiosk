@@ -272,6 +272,11 @@ class Kiosk_Data_MongoSourceSchemaTestCase extends UnitTestCase {
 			),
 		));
 		$this->assertEqual($user->name, 'Hanako');
+		
+		// ソートキーが変換されていることを確認する
+		
+		$user = User::find(array('first', 'order'=>array('age')));
+		$this->assertEqual($user->name, 'Mei');
 	}
 	
 	public function testColumnTyping() {

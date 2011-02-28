@@ -570,6 +570,12 @@ class Kiosk_Data_Query_Mongo extends Kiosk_Data_Query {
 		return $this->mergeArrays($conditions);
 	}
 	
+	public function parseOrderColumn($name) {
+		list($name, $reverse) = parent::parseOrderColumn($name);
+		$name = $this->_schema->toDocumentColumnName($name);
+		return array($name, $reverse);
+	}
+	
 	private function mergeArrays($arrays) {
 		$result = array();
 		foreach ($arrays as $hash) {
