@@ -29,10 +29,9 @@ class SampleMongo {
 	}
 	
 	public function cleanup() {
-		$collection = $this->collection('user');
-		$collection->drop();
-		
-		$this->ids = array();
+		foreach ($this->db()->listCollections() as $collection) {
+			$collection->drop();
+		}
 	}
 	
 	public function collection($name) {

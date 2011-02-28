@@ -371,7 +371,7 @@ class Kiosk_Data_MongoSourceReferencesTestCase extends UnitTestCase {
 			)
 		));
 		
-		// 構造の準備
+		// データの準備
 		
 		list($taro, ) = User::import(array('name' => 'Taro'));
 		list($mba, ) = Item::import(array(

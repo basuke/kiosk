@@ -73,6 +73,14 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 		$this->collection = $source->db->$name;
 	}
 	
+	protected function defaultColumnDef($name) {
+		return array(
+			'name' => $name, 
+			'type' => null, 
+			'_ref' => false, 
+		);
+	}
+	
 	public function finalize() {
 		$columns = array();
 		
@@ -87,8 +95,47 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 				);
 			}
 			
-			if (empty($def['name'])) {
-				$def['name'] = $key;
+			$def += $this->defaultColumnDef($key);
+			
+			switch ($def['type']) {
+				case 'string':
+				case 'text':
+				case 'str':
+					$def['type'] = 'string';
+					break;
+					
+				case 'integer':
+				case 'int':
+					$def['type'] = 'integer';
+					break;
+					
+				case 'double':
+				case 'float':
+					$def['type'] = 'double';
+					break;
+					
+				case 'boolean':
+				case 'bool':
+					$def['type'] = 'boolean';
+					break;
+					
+				case 'array':
+					$def['type'] = 'array';
+					break;
+					
+				case 'object':
+					$def['type'] = 'object';
+					break;
+					
+				case 'entity':
+				case 'hasMany':
+				case 'hasOne':
+					$def['_ref'] = true;
+					break;
+					
+				default:
+					$def['_ref'] = true;
+					break;
 			}
 			
 			$columns[$key] = $def;
@@ -225,16 +272,54 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 		return $this->collection->find($conditions, array())->count();
 	}
 	
-	public function fetch($obj, $name, $params) {
-		$ref = $obj->$name;
+	public function fetch($entity, $name, $params) {
+		$def = $this->columnDef($name);
 		$value = null;
 		
-		if ($ref) {
-			$value = $this->resolveDBRef($ref);
-			$obj->$name = $value;
+		if ($def['_ref']) {
+			$value = $this->fetchReference($entity, $def, $params);
 		}
 		
 		return $value;
+	}
+	
+	protected function fetchReference($entity, $def, $params) {
+		$name = $def['name'];
+		
+		$value = $entity->$name;
+		
+		if (!$value) return null;
+		
+		switch ($def['type']) {
+			case 'hasMany':
+				$value = $this->resolveDBRef($value);
+				break;
+				
+			case 'hasOne':
+				$value = $this->resolveDBRef($value);
+				break;
+				
+			case 'entity':
+				$value = $this->resolveDBRef($value);
+				$entity->$name = $value;
+				break;
+				
+			default:
+				$class = $def['type'];
+				break;
+		}
+		
+		return $value;
+	}
+	
+	public function columnDef($name) {
+		foreach ($this->columns as $key => $def) {
+			if ($name == $key) {
+				return $def;
+			}
+		}
+		
+		return $this->defaultColumnDef($name);
 	}
 	
 	public function toDocumentColumnName($name) {
@@ -245,14 +330,8 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 				substr($name, $pos);
 		}
 		
-		foreach ($this->columns as $key => $def) {
-			if ($name == $key) {
-				$name = $def['name'];
-				break;
-			}
-		}
-		
-		return $name;
+		$def = $this->columnDef($name);
+		return $def['name'];
 	}
 	
 	/*
@@ -276,66 +355,86 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 			$value = $doc[$key];
 			unset($doc[$key]);
 			
-			if (isset($def['type'])) {
-				switch ($def['type']) {
-					case 'string':
-					case 'text':
-					case 'str':
-						$value = strval($value);
-						break;
-						
-					case 'integer':
-					case 'int':
-						$value = intval($value);
-						break;
-						
-					case 'double':
-					case 'float':
-						$value = floatval($value);
-						break;
-						
-					case 'boolean':
-					case 'bool':
-						if (is_string($value)) {
-							if (ctype_digit($value)) {
-								$value = intval($value);
-							} else {
-								$value = preg_match('/^(on|true|yes)$/i', $value);
-							}
-						}
-						$value = (bool) $value;
-						break;
-						
-					case 'array':
-						$value = (array) $value;
-						break;
-						
-					case 'object':
-						if (!is_object($value) and !is_array($value)) {
-							trigger_error(KIOSK_ERROR_RUNTIME. 
-										'type mismatch');
-							return null;
-						}
-						break;
-						
-					case 'entity':
-						if (!is_object($value)) {
-							trigger_error(KIOSK_ERROR_RUNTIME. 
-										'type mismatch');
-							return null;
-						}
-						$value = $this->createDBRef($value);
-						break;
-						
-				}
-			}
-			
+			$value = $this->coerceDocumentValue($def, $value);
 			$name = $def['name'];
 			
 			$doc[$name] = $value;
 		}
 		
 		return $doc;
+	}
+	
+	protected function coerceDocumentValue($def, $value) {
+		switch ($def['type']) {
+			case null:	// 変換なし
+				return $value;
+				
+			case 'string':
+				return strval($value);
+				
+			case 'integer':
+				return intval($value);
+				
+			case 'double':
+				return floatval($value);
+				
+			case 'boolean':
+				if (is_string($value)) {
+					if (ctype_digit($value)) {
+						$value = intval($value);
+					} else {
+						$value = preg_match('/^(on|true|yes)$/i', $value);
+					}
+				}
+				return (bool) $value;
+				
+			case 'array':
+				return (array) $value;
+				
+			case 'object':
+				if (!is_object($value) and !is_array($value)) {
+					trigger_error(KIOSK_ERROR_RUNTIME. 
+								'type mismatch');
+					return null;
+				}
+				return $value;
+				
+			case 'entity':
+				if (!is_object($value)) {
+					trigger_error(KIOSK_ERROR_RUNTIME. 
+								'type mismatch');
+					return null;
+				}
+				return $this->createDBRef($value);
+		}
+		
+		// 後はエンティティクラス名が指定されているはず
+		$class = $def['type'];
+		$schema = $this->source->schemaForClass($class);
+		if (! $schema) {
+			trigger_error(KIOSK_ERROR_RUNTIME. 'unknown type:'. $class);
+			return null;
+		}
+		
+		$value = $this->ensureSaved($value);
+		if (empty($value)) {
+			trigger_error(KIOSK_ERROR_RUNTIME. 'cannnot save reference for non-saved entity');
+			return null;
+		}
+		
+		return new MongoId($value->id);
+	}
+	
+	protected function ensureSaved($entity) {
+		if (empty($entity->id)) {
+			Kiosk_save($entity);
+			
+			if (empty($entity->id)) {
+				trigger_error(KIOSK_ERROR_RUNTIME. 'cannnot create reference for non-saved entity');
+				return null;
+			}
+		}
+		return $entity;
 	}
 	
 	public function createDBRef($entity) {
@@ -346,13 +445,10 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 			return null;
 		}
 		
-		if (empty($entity->id)) {
-			Kiosk_save($entity);
-			
-			if (empty($entity->id)) {
-				trigger_error(KIOSK_ERROR_RUNTIME. 'cannnot create reference for non-saved entity');
-				return null;
-			}
+		$entity = $this->ensureSaved($entity);
+		if (empty($entity)) {
+			trigger_error(KIOSK_ERROR_RUNTIME. 'cannnot create reference for non-saved entity');
+			return null;
 		}
 		
 		return MongoDBRef::create($collection, new MongoId($entity->id));
