@@ -127,9 +127,26 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 					$def['type'] = 'object';
 					break;
 					
-				case 'entity':
 				case 'hasMany':
 				case 'hasOne':
+					$def['_ref'] = true;
+					
+					if (empty($def['class'])) {
+						trigger_error(KIOSK_ERROR_CONFIG. 'class for association not specified');
+						continue;
+					}
+					
+					$def['schema'] = Kiosk_schema($def['class']);
+					if (empty($def['schema'])) {
+						trigger_error(KIOSK_ERROR_CONFIG. 'schema for association not found');
+						continue;
+					}
+					
+					$def['association_column'] = (isset($def['associationColumn']) ? $def['associationColumn'] : strtolower($this->class));
+					
+					break;
+					
+				case 'entity':
 					$def['_ref'] = true;
 					break;
 					
@@ -284,35 +301,52 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 	}
 	
 	protected function fetchReference($entity, $def, $params) {
-		$name = $def['name'];
+		extract($def);
 		
-		$value = $entity->$name;
-		
-		if (!$value) return null;
-		
-		switch ($def['type']) {
+		switch ($type) {
 			case 'hasMany':
-				$value = $this->resolveDBRef($value);
-				break;
-				
 			case 'hasOne':
-				$value = $this->resolveDBRef($value);
+				$many = ($type == 'hasMany');
+				
+				if (empty($entity->id) or empty($schema)) {
+					return ($many ? array() : null);
+				}
+				
+				$params += array(
+					'conditions' => array(
+						$association_column => new MongoId($entity->id), 
+					), 
+				);
+				
+				if (!$many) {
+					$params[] = 'first';
+				}
+				
+				$value = $schema->find($params);
 				break;
 				
 			case 'entity':
-				$value = $this->resolveDBRef($value);
-				$entity->$name = $value;
+				$value = $entity->$name;
+				
+				if ($value) {
+					$value = $this->resolveDBRef($value);
+					$entity->$name = $value;
+				}
 				break;
 				
 			default:
-				if (is_a($value, 'MongoId')) {
-					$schema = $this->source->schemaForClass($def['type']);
-					$value = $schema->load($value, $params);
-				} else {
-					$value = $this->resolveDBRef($value);
-				}
+				$value = $entity->$name;
 				
-				$entity->$name = $value;
+				if ($value) {
+					if (is_a($value, 'MongoId')) {
+						$schema = $this->source->schemaForClass($type);
+						$value = $schema->load($value, $params);
+					} else {
+						$value = $this->resolveDBRef($value);
+					}
+					
+					$entity->$name = $value;
+				}
 				break;
 		}
 		

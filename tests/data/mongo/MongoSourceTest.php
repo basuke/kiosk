@@ -430,7 +430,7 @@ class Kiosk_Data_MongoSourceReferencesTestCase extends UnitTestCase {
 		// ユーザーに関連するアイテムをロードする
 		
 		$items = $taro->fetch('items');
-//		$this->assertEqual(count($items), 3);
+		$this->assertEqual(count($items), 3);
 	}
 }
 
