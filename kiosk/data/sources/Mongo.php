@@ -238,16 +238,21 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 		オブジェクトを検索する
 	*/
 	public function findWithQuery($query) {
-		$conditions = $query->conditions;
-		if (! $conditions) $conditions = array();
-		
-		$conditions = $query->parseConditions($conditions);
-		if (! $conditions) $conditions = array();
-		
-		$columns = $query->columns;
-		if (! $columns) $columns = array();
+		extract($query->params());
 		
 		$cursor = $this->collection->find($conditions, $columns);
+		
+		if ($order) {
+			$cursor->sort($order);
+		}
+		
+		if ($offset) {
+			$cursor->skip($offset);
+		}
+		
+		if ($limit) {
+			$cursor->limit($limit);
+		}
 		
 		return iterator_to_array($cursor, false);
 	}
@@ -280,11 +285,7 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 	}
 	
 	public function countWithQuery($query) {
-		$conditions = $query->conditions;
-		if (! $conditions) $conditions = array();
-		
-		$conditions = $query->parseConditions($query->conditions);
-		if (! is_array($conditions)) $conditions = array();
+		extract($query->params());
 		
 		return $this->collection->find($conditions, array())->count();
 	}
@@ -513,6 +514,34 @@ class Kiosk_Data_Query_Mongo extends Kiosk_Data_Query {
 		'<' => 'lt',
 		'<=' => 'lte',
 	);
+	
+	public function params() {
+		$params = parent::params();
+		
+		// conditions
+		
+		$conditions = $params['conditions'];
+		if (! $conditions) $conditions = array();
+		
+		$conditions = $this->parseConditions($conditions);
+		if (! $conditions) $conditions = array();
+		
+		$params['conditions'] = $conditions;
+		
+		// order 
+		if ($params['order']) {
+			$sort = array();
+			
+			foreach ($this->parseOrder($params['order']) as $order) {
+				list($name, $reverse) = $order;
+				$sort[$name] = ($reverse ? -1 : 1);
+			}
+			
+			$params['order'] = $sort;
+		}
+		
+		return $params;
+	}
 	
 	public function buildCondition($name, $op, $value) {
 		$name = $this->_schema->toDocumentColumnName($name);

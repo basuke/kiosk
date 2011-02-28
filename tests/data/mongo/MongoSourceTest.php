@@ -129,6 +129,44 @@ class Kiosk_Data_MongoSourceCRUDTestCase extends UnitTestCase {
 		)), 1);
 	}
 	
+	public function testOrder() {
+		// ユーザーの準備
+		$this->sample->env2();
+		
+		$user = User::find(array(
+			'first', 
+			'order' => array('age')
+		));
+		$this->assertEqual($user->name, 'Mei');
+		
+		$user = User::find(array(
+			'first', 
+			'order' => array('-age')
+		));
+		$this->assertEqual($user->name, 'Taro');
+	}
+	
+	public function testOffsetLimit() {
+		// ユーザーの準備
+		$this->sample->env2();
+		
+		$users = User::find(array(
+			'order' => array('age'), 
+			'offset' => 0, 
+			'limit' => 2, 
+		));
+		$this->assertEqual(count($users), 2);
+		$this->assertEqual($users[1]->name, 'Sachiko');
+		
+		$users = User::find(array(
+			'order' => array('age'), 
+			'offset' => 2, 
+			'limit' => 2, 
+		));
+		$this->assertEqual(count($users), 2);
+		$this->assertEqual($users[1]->name, 'Hanako');
+	}
+	
 	public function testComparisonOperators() {
 		// ユーザーの準備
 		$this->sample->env2();
