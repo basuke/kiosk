@@ -188,6 +188,12 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 		return iterator_to_array($cursor, false);
 	}
 	
+	public function rowsToObjects($rows, $query) {
+		$entities = parent::rowsToObjects($rows, $query);
+		
+		return $entities;
+	}
+	
 	public function rowToColumns($row, $query) {
 		$row['id'] = strval($row['_id']);
 		unset($row['_id']);
@@ -199,6 +205,10 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 				$value = $row[$name];
 				unset($row[$name]);
 				$row[$key] = $value;
+			}
+			
+			if (!empty($def['load'])) {
+				$row[$key] = $this->resolveDBRef($row[$key]);
 			}
 		}
 		

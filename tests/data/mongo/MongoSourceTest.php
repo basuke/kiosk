@@ -355,5 +355,34 @@ class Kiosk_Data_MongoSourceReferencesTestCase extends UnitTestCase {
 		$item->fetch('user');
 		$this->assertEqual($item->user->name, 'Taro');
 	}
+	
+	public function testAutoLoadReference() {
+		// 構造の定義
+		
+		User::bind($this->source, array(
+		));
+		
+		Item::bind($this->source, array(
+			'columns' => array(
+				'user' => array(
+					'type' => 'entity', // カラムはDBRef
+					'load' => true,		// 自動で読み込まれる
+				), 
+			)
+		));
+		
+		// 構造の準備
+		
+		list($taro, ) = User::import(array('name' => 'Taro'));
+		list($mba, ) = Item::import(array(
+			'user' => $taro, 
+			'title' => 'MacBook Air', 
+		));
+		
+		// 自動的にロードされることを確認
+		
+		$item = Item::load($mba->id);
+		$this->assertEqual($item->user->name, 'Taro');
+	}
 }
 
