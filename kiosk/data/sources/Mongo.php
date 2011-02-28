@@ -11,6 +11,7 @@ class Kiosk_Data_Source_Mongo extends Kiosk_Data_Source {
 	
 	public $conn;
 	public $db;
+	protected $schemas = array();
 	
 	public function __construct($config) {
 		$host = 'localhost';
@@ -33,7 +34,30 @@ class Kiosk_Data_Source_Mongo extends Kiosk_Data_Source {
 		}
 		
 		$schema = new Kiosk_Data_Schema_Mongo($class, $this, $params);
+		
+		$this->schemas[strtolower($class)] = $schema;
+		
 		return $schema;
+	}
+	
+	public function schemaForClass($class) {
+		$key = strtolower($class);
+		
+		return (isset($this->schemas[$key]) ? $this->schemas[$key] : null);
+	}
+	
+	public function collectionForClass($class) {
+		$schema = $this->schemaForClass($class);
+		return ($schema ? $schema->name : null);
+	}
+	
+	public function classForCollection($collection) {
+		foreach ($this->schemas as $schema) {
+			if ($schema->name == $collection) {
+				return $schema->class;
+			}
+		}
+		return null;
 	}
 }
 
@@ -153,7 +177,6 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 		$conditions = $query->conditions;
 		if (! $conditions) $conditions = array();
 		
-#var_dump($conditions, $query->parseConditions($conditions));
 		$conditions = $query->parseConditions($conditions);
 		if (! $conditions) $conditions = array();
 		
@@ -228,6 +251,7 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 			}
 			
 			$value = $doc[$key];
+			unset($doc[$key]);
 			
 			if (isset($def['type'])) {
 				switch ($def['type']) {
@@ -270,16 +294,54 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 							return null;
 						}
 						break;
+						
+					case 'entity':
+						if (!is_object($value)) {
+							trigger_error(KIOSK_ERROR_RUNTIME. 
+										'type mismatch');
+							return null;
+						}
+						$value = $this->createDBRef($value);
+						break;
+						
 				}
 			}
 			
 			$name = $def['name'];
 			
 			$doc[$name] = $value;
-			unset($doc[$key]);
 		}
 		
 		return $doc;
+	}
+	
+	public function createDBRef($entity) {
+		$class = get_class($entity);
+		$collection = $this->source->collectionForClass($class);
+		if (!$collection) {
+			trigger_error(KIOSK_ERROR_RUNTIME. 'cannnot create non-bound entity');
+			return null;
+		}
+		
+		if (empty($entity->id)) {
+			Kiosk_save($entity);
+			
+			if (empty($entity->id)) {
+				trigger_error(KIOSK_ERROR_RUNTIME. 'cannnot create reference for non-saved entity');
+				return null;
+			}
+		}
+		
+		return MongoDBRef::create($collection, new MongoId($entity->id));
+	}
+	
+	public function resolveDBRef($ref) {
+		$collection = $ref['$ref'];
+		$class = $this->source->classForCollection($collection);
+		if (!$class) {
+			return MongoDBRef::get($this->collection->db, $ref);
+		}
+		return Kiosk_load($class, $ref['$id']);
 	}
 }
 

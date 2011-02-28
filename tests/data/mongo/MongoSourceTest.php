@@ -304,3 +304,49 @@ class Kiosk_Data_MongoSourceSchemaTestCase extends UnitTestCase {
 	}
 }
 
+class Kiosk_Data_MongoSourceReferencesTestCase extends UnitTestCase {
+	public function setUp() {
+		Kiosk_reset();
+		
+		$this->sample = new SampleMongo();
+		$this->sample->cleanup();
+		
+		$this->source = $this->sample->source;
+	}
+	
+	public function testReference() {
+		// 構造の定義
+		
+		User::bind($this->source, array(
+		));
+		
+		Item::bind($this->source, array(
+			'columns' => array(
+				'user' => array(
+					'type' => 'entity', 
+				), 
+			)
+		));
+		
+		// エンティティの作成時にDBRefが作成されることを確認
+		
+		$taro = User::create(array(
+			'name' => 'Taro', 
+		));
+		$taro->save();
+		
+		$mba = Item::create(array(
+			'user' => $taro, 
+			'title' => 'MacBook Air', 
+		));
+		$mba->save();
+		
+		$raw_data = $this->sample->load('item', $mba->id);
+		$this->assertEqual($raw_data['title'], $mba->title);
+		$this->assertTrue(is_array($raw_data['user']));
+		
+		$user = MongoDBRef::get($this->sample->db(), $raw_data['user']);
+		$this->assertEqual($user['name'], $taro->name);
+	}
+}
+
