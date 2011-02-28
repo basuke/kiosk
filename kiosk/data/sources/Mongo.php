@@ -196,8 +196,9 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 			$name = $def['name'];
 			
 			if (isset($row[$name])) {
-				$row[$key] = $row[$name];
+				$value = $row[$name];
 				unset($row[$name]);
+				$row[$key] = $value;
 			}
 		}
 		
@@ -212,6 +213,18 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 		if (! is_array($conditions)) $conditions = array();
 		
 		return $this->collection->find($conditions, array())->count();
+	}
+	
+	public function fetch($obj, $name, $params) {
+		$ref = $obj->$name;
+		$value = null;
+		
+		if ($ref) {
+			$value = $this->resolveDBRef($ref);
+			$obj->$name = $value;
+		}
+		
+		return $value;
 	}
 	
 	public function toDocumentColumnName($name) {

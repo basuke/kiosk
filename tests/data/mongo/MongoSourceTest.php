@@ -323,7 +323,7 @@ class Kiosk_Data_MongoSourceReferencesTestCase extends UnitTestCase {
 		Item::bind($this->source, array(
 			'columns' => array(
 				'user' => array(
-					'type' => 'entity', 
+					'type' => 'entity', // カラムはDBRef
 				), 
 			)
 		));
@@ -346,7 +346,14 @@ class Kiosk_Data_MongoSourceReferencesTestCase extends UnitTestCase {
 		$this->assertTrue(is_array($raw_data['user']));
 		
 		$user = MongoDBRef::get($this->sample->db(), $raw_data['user']);
-		$this->assertEqual($user['name'], $taro->name);
+		$this->assertEqual($user['name'], 'Taro');
+		
+		// ロードされたエンティティからカラムを
+		// フェッチした場合にDBRefが正しく参照されることを確認
+		
+		$item = Item::load($mba->id);
+		$item->fetch('user');
+		$this->assertEqual($item->user->name, 'Taro');
 	}
 }
 
