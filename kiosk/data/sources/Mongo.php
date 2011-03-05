@@ -78,6 +78,8 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 			'name' => $name, 
 			'type' => null, 
 			'_ref' => false, 
+			'load' => false, 
+			'default' => null, 
 		);
 	}
 	
@@ -207,6 +209,22 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 			return false;
 		}
 		
+		// 初期値を埋める
+		foreach ($this->columns as $key => $def) {
+			$name = $def['name'];
+			
+			if (!isset($doc[$name])) {
+				$value = $def['default'];
+				if ($value) {
+					if (is_a($value, 'Kiosk_Callable')) {
+						$value = $value->call();
+					}
+					
+					$doc[$name] = $value;
+				}
+			}
+		}
+		
 		$this->collection->save($doc);
 		
 		if (empty($entity->id)) {
@@ -268,7 +286,7 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 		unset($row['_id']);
 		
 		foreach ($this->columns as $key => $def) {
-			$name = $def['name'];
+			$name = @$def['name'];
 			
 			if (isset($row[$name])) {
 				$value = $row[$name];
@@ -277,7 +295,11 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 			}
 			
 			if (!empty($def['load'])) {
-				$row[$key] = $this->resolveDBRef($row[$key]);
+				$value = isset($row[$key]) ? $row[$key] : null;
+				
+				if ($value) {
+					$row[$key] = $this->resolveReference($def, $value);
+				}
 			}
 		}
 		
@@ -330,7 +352,7 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 				$value = $entity->$name;
 				
 				if ($value) {
-					$value = $this->resolveDBRef($value);
+					$value = $this->resolveReference($def, $value, $params);
 					$entity->$name = $value;
 				}
 				break;
@@ -339,16 +361,25 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 				$value = $entity->$name;
 				
 				if ($value) {
-					if (is_a($value, 'MongoId')) {
-						$schema = $this->source->schemaForClass($type);
-						$value = $schema->load($value, $params);
-					} else {
-						$value = $this->resolveDBRef($value);
-					}
-					
+					$value = $this->resolveReference($def, $value, $params);
 					$entity->$name = $value;
 				}
 				break;
+		}
+		
+		return $value;
+	}
+	
+	public function resolveReference($def, $value, $params=array()) {
+		if ($def['type'] == 'entity') {
+			$value = $this->resolveDBRef($value);
+		} else {
+			if (is_a($value, 'MongoId')) {
+				$schema = $this->source->schemaForClass($def['type']);
+				$value = $schema->load($value, $params);
+			} else {
+				$value = $this->resolveDBRef($value);
+			}
 		}
 		
 		return $value;
@@ -365,6 +396,8 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 	}
 	
 	public function toDocumentColumnName($name) {
+		if ($name == '_id') return $name;
+		
 		$pos = strpos($name, '.');
 		if ($pos !== false) {
 			return
@@ -373,6 +406,8 @@ class Kiosk_Data_Schema_Mongo extends Kiosk_Data_Schema {
 		}
 		
 		$def = $this->columnDef($name);
+		if (!$def) return $name;
+		
 		return $def['name'];
 	}
 	
