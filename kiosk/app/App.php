@@ -221,7 +221,6 @@ class Kiosk_App_App {
 		if (file_exists(APP_VIEWS_DIR. '/'. $view) == false) {
 			$this->_logger->log(LOG_ERR, "view file {$view} not found in views.");
 			$context->setHTTPStatus(404, 'File not found');
-			return;
 		}
 		
 		$vars = $context->variables();
