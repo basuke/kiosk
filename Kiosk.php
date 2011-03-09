@@ -20,6 +20,7 @@ if (defined('E_DEPRECATED')) {
 
 require_once KIOSK_LIB_DIR. '/data/Object.php';
 require_once KIOSK_LIB_DIR. '/Backend.php';
+require_once KIOSK_LIB_DIR. '/form/Form.php';
 
 class Kiosk extends KioskObject {
 	/*
@@ -99,6 +100,13 @@ class Kiosk extends KioskObject {
 		}
 		
 		return new Kiosk_Callable($func, $args);
+	}
+	
+	/*
+		フォームオブジェクトを作成して返す
+	*/
+	function form($def) {
+		return new Kiosk_Form($def);
 	}
 }
 
