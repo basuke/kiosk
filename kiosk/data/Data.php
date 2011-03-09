@@ -181,6 +181,11 @@ class Kiosk_Data {
 		return $schema->find($query);
 	}
 	
+	function count(&$class, $query) {
+		$schema =& $this->schema($class);
+		return $schema->count($query);
+	}
+	
 	function query(&$class, $params) {
 		$schema =& $this->schema($class);
 		return $schema->createQuery($params);

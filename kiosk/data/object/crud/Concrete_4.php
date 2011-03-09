@@ -41,5 +41,10 @@ class Kiosk_Object_CRUD_Concrete extends Kiosk_Object_CRUD {
 		
 		return Kiosk_find($class, $params);
 	}
+	
+	function count($params=array()) {
+		$class = get_function_call_info();
+		return Kiosk_count($class, $params);
+	}
 }
 

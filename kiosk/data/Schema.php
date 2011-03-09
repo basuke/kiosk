@@ -58,10 +58,7 @@ class Kiosk_Data_Schema {
 		return false;
 	}
 	
-	/*
-		オブジェクトを検索する
-	*/
-	function find($query) {
+	function ensureQuery($query) {
 		if (is_string($query)) {
 			$query = array('conditions' => $query);
 		}
@@ -72,6 +69,14 @@ class Kiosk_Data_Schema {
 		
 		assert('is_a($query, "Kiosk_Data_Query")');
 		
+		return $query;
+	}
+	
+	/*
+		オブジェクトを検索する
+	*/
+	function find($query) {
+		$query = $this->ensureQuery($query);
 		$rows = $this->findWithQuery($query);
 		
 		if ($query->raw) {
@@ -97,6 +102,14 @@ class Kiosk_Data_Schema {
 	
 	function findWithQuery(&$query) {
 		return array();
+	}
+	
+	function count($query) {
+		return $this->countWithQuery($this->ensureQuery($query));
+	}
+	
+	function countWithQuery(&$query) {
+		return 0;
 	}
 	
 	function rowsToObjects($rows, &$query) {

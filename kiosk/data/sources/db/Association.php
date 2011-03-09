@@ -16,7 +16,7 @@ class Kiosk_Association extends Kiosk_Data_Association {
 			'columns' => $this->columns, 
 		);
 		
-		$refs = $this->center->load($this->class, $ids, $params);
+		$refs = $this->schema->load($ids, $params);
 		
 		foreach ($objects as $key=>$object) {
 			if (isset($object->$column)) {
@@ -65,7 +65,11 @@ class Kiosk_RefersToAssociation extends Kiosk_Association {
 			'columns' => $this->columns, 
 		);
 		
-		$obj->$name =& $this->center->load($this->class, $id, $params);
+		//	以下のワーニングを防ぐための処置
+		//	「Indirect modification of overloaded property 
+		//				Item::$user has no effect in ... 」
+		$obj->$name = null;
+		$obj->$name =& $this->schema->load($id, $params);
 		
 		return $obj->$name;
 	}
@@ -75,7 +79,8 @@ class Kiosk_RefersToAssociation extends Kiosk_Association {
 		if (! isset($obj->$name)) return;
 		
 		if ($this->schema->isSaved($obj->$name) == false) {
-			$this->center->save($obj->$name);
+			$data =& Kiosk_data();
+			$data->save($obj->$name);
 		}
 		
 		$column = $this->column;
@@ -117,7 +122,7 @@ class Kiosk_HasManyAssociation extends Kiosk_Association {
 		
 		$params += $more;
 		
-		return $this->center->find($this->class, $params);
+		return $this->schema->find($params);
 	}
 	
 	function paramsToFetch(&$obj) {

@@ -58,7 +58,6 @@ class Kiosk_Data_Association {
 		return $assoc;
 	}
 	
-	var $center;		// copy of global Kiosk_Data object
 	var $origin_schema;
 	var $schema;
 	
@@ -71,11 +70,11 @@ class Kiosk_Data_Association {
 	}
 	
 	function __construct($origin_class, $target_info) {
-		$this->center =& Kiosk_data();
-		$this->center->apply($this, $target_info);
+		$data =& Kiosk_data();
+		$data->apply($this, $target_info);
 		
-		$this->origin_schema =& $this->center->schema($origin_class);
-		$this->schema =& $this->center->schema($this->class);
+		$this->origin_schema =& $data->schema($origin_class);
+		$this->schema =& $data->schema($this->class);
 	}
 	
 	function fetch(&$obj, $params) {
