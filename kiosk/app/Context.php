@@ -25,7 +25,7 @@ class Kiosk_App_Context {
 		$applied = array();
 		
 		foreach ($params as $key => $value) {
-			if (! preg_match('/^\\w+$/', $key)) continue;
+			if (! preg_match('/^[^_]\\w*$/', $key)) continue;
 			
 			$this->$key = $value;
 			$applied[$key] = $value;
@@ -55,7 +55,7 @@ class Kiosk_App_Context {
 	}
 	
 	function setRouteResult($result) {
-		$this->_route_result = $this->apply($result);
+		$this->_route_result = $result;
 	}
 	
 	function controllerResult() {
@@ -63,7 +63,7 @@ class Kiosk_App_Context {
 	}
 	
 	function setControllerResult($result) {
-		$this->_controller_result = $this->apply($result);
+		$this->_controller_result = $result;
 	}
 	
 	function variables() {
@@ -82,6 +82,16 @@ class Kiosk_App_Context {
 	function redirectTo($url, $temporally=true) {
 		$this->_redirect_url = $url;
 		$this->status = ($temporally ? 302 : 301);
+	}
+	
+	// Content Type
+	
+	function type() {
+		return $this->type;
+	}
+	
+	function setType($type) {
+		$this->type = $type;
 	}
 	
 	// HTTP Status

@@ -7,11 +7,15 @@
 */
 
 require_once KIOSK_LIB_DIR. '/app/Router.php';
+require_once KIOSK_LIB_DIR. '/Logger.php';
+require_once KIOSK_LIB_DIR. '/app/renderers/HTML.php';
+require_once KIOSK_LIB_DIR. '/app/renderers/JSON.php';
 
 class Kiosk_App_App {
 	var $_router;
 	var $_app_dir;
 	var $_logger;
+	var $_renderers = array();
 	
 	function Kiosk_App_App() {
 		$this->__construct();
@@ -21,6 +25,12 @@ class Kiosk_App_App {
 		$this->_router =& new Kiosk_App_Router();
 		
 		set_error_handler(array($this, 'errorHandler'));
+		
+		$logger = new Kiosk_Logger();
+		$this->setLogger($logger);
+		
+		$this->registerRenderer(new Kiosk_App_HTMLRenderer(), 'html');
+		$this->registerRenderer(new Kiosk_App_JSONRenderer(), 'json');
 	}
 	
 	// Logger ==================================
@@ -28,6 +38,10 @@ class Kiosk_App_App {
 	function setLogger(&$logger) {
 		unset($this->_logger);
 		$this->_logger =& $logger;
+	}
+	
+	function logger() {
+		return $this->_logger;
 	}
 	
 	// Application Directory ===================
@@ -115,7 +129,8 @@ class Kiosk_App_App {
 		}
 		
 		// ルーティングの結果で情報をアップデート
-		$context->setRouteResult($route);
+		$result = $context->apply($route);
+		$context->setRouteResult($result);
 		
 		if (! $context->action) {
 			$context->action = 'index';
@@ -124,11 +139,7 @@ class Kiosk_App_App {
 		// コントローラを実行
 		if (! $context->controller) return;
 		
-		$result = $this->handleController($context);
-		if (! $result) return;
-		
-		// コントローラの結果で情報をアップデート
-		$context->setControllerResult($result);
+		$this->handleController($context);
 	}
 	
 	function url($params) {
@@ -146,11 +157,14 @@ class Kiosk_App_App {
 	// Controller ==============================
 	
 	function handleController(&$context) {
-		if (! $this->loadController($context->controller)) {
-			return array();
+		if ($this->loadController($context->controller)) {
+			$result = $this->runController($context);
+			
+			if (! is_null($result)) {
+				$result = $context->apply($result);
+				$context->setControllerResult($result);
+			}
 		}
-		
-		return $this->runController($context);
 	}
 	
 	function loadController($controller) {
@@ -180,6 +194,7 @@ class Kiosk_App_App {
 			
 			$before = $context->variables();
 			
+			// コントローラに環境変数を設定
 			foreach ($before as $key=>$value) {
 				if (is_null($value)) continue;
 				if (isset($c->$key)) continue;
@@ -193,17 +208,34 @@ class Kiosk_App_App {
 				$result = $c->$action($context);
 			}
 			
-			if (! is_array($result)) {
-				$result = array();
-			}
-			
+			// コントローラのパブリックな変数を設定
+			$after = array();
 			foreach ((array) $c as $key => $value) {
 				if (!isset($before[$key]) or $before[$key] !== $value) {
-					$result[$key] = $value;
+					$after[$key] = $value;
 				}
 			}
+			$context->apply($after);
 			
 			return $result;
+		}
+		
+		return null;
+	}
+	
+	// Renderer ================================
+	
+	function registerRenderer($renderer, $type) {
+		if (! empty($this->_renderers[$type])) {
+			unset($this->_renderers[$type]);
+		}
+		
+		$this->_renderers[$type] =& $renderer;
+	}
+	
+	function &rendererForType($type) {
+		if (! empty($this->_renderers[$type])) {
+			return $this->_renderers[$type];
 		}
 		
 		return null;
@@ -212,67 +244,23 @@ class Kiosk_App_App {
 	// View ====================================
 	
 	function renderResponse(&$context) {
-		// 準備オッケー
-		$this->_logger->log('will start rendering views');
-		
-		$view = $this->viewPath($context);
-		$context->view = $view;
-		
-		if (file_exists(APP_VIEWS_DIR. '/'. $view) == false) {
-			$this->_logger->log(LOG_ERR, "view file {$view} not found in views.");
-			$context->setHTTPStatus(404, 'File not found');
-		}
-		
-		$vars = $context->variables();
-		
-		if (file_exists(APP_VIEWS_DIR. "/layouts/{$context->layout}.html")) {
-			$this->renderHtml("layouts/{$context->layout}.html", $vars);
-		} else {
-			$this->renderHtml($view, $vars);
-			
-			if (DEVELOPMENT) {
-				$this->renderHtml('elements/debug_console.html', $vars);
-			}
-		}
-		
-		$this->_logger->log('finished rendering views');
-	}
-	
-	function viewPath(&$context) {
-		$controller = $context->controller;
-		$action = $context->action;
 		$type = $context->type;
 		
 		if (!$type) {
 			$type = 'html';
 		}
+		// 準備オッケー
+		$this->_logger->log('will start rendering views: type='. $type);
 		
-		if (!$action) {
-			$action = 'index';
+		$renderer =& $this->rendererForType($type);
+		if (! $renderer) {
+			$this->_logger->log('cannot find renderer for type: '. $type);
+			return;
 		}
 		
-		$path = "{$action}.{$type}";
+		$renderer->render($this, $context);
 		
-		if ($controller) {
-			$path = $controller. '/'. $path;
-		}
-		
-		return $path;
-	}
-	
-	function renderHtml($path, $vars) {
-		require_once KIOSK_LIB_DIR. '/app/Smarty.php';
-		$smarty = new KioskSmarty();
-		
-		foreach ($vars as $key=>$value) {
-			$smarty->assign($key, $value);
-		}
-		
-		$smarty->display($path);
-	}
-	
-	function missingTemplate($type, $name, $source, $timestamp, $smarty) {
-		return false;
+		$this->_logger->log('finished rendering views');
 	}
 }
 
