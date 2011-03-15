@@ -58,18 +58,60 @@ class Kiosk_Form {
 		$data = array();
 		
 		foreach ($this->fields as $field) {
-			$data[$field->name] = $field->initial;
+			$data[$field->name] = $field->initial();
 		}
 		
 		return $data;
 	}
 	
 	function value($name) {
-		if (isset($this->data[$name])) {
-			return $this->data[$name];
+		$key = null;
+		
+		$pos1 = strpos($name, '[');
+		$pos2 = strpos($name, ']');
+		
+		if ($pos1 !== false and $pos2 !== false) {
+			$key = substr($name, $pos1 + 1, ($pos2 - $pos1 - 1));
+			$name = substr($name, 0, $pos1);
+			
+			if (ctype_digit($key)) {
+				$key = intval($key);
+			}
 		}
 		
-		return null;
+		$value = null;
+		
+		if (isset($this->data[$name])) {
+			$value = $this->data[$name];
+			
+			if ($key and is_array($value)) {
+				$value = $value[$key];
+			}
+		}
+		
+		return $value;
+	}
+	
+	function resolvePath($root, $path) {
+		// counts[abc]
+		$value = $root;
+		
+		while ($path) {
+			if (preg_match('/^([^\\[]]+)(?:\\[([^\\]]+)\\]$/', $matches)) {
+				$key = $matches[1];
+				
+				if (! is_array($value)) return null;
+				if (! isset($value[$key])) return null;
+				
+				$value = $value[$key];
+			} else {
+				return null;
+			}
+			
+			$path = $matches[2];
+		}
+		
+		return $value;
 	}
 	
 	// form html rendering =====================
@@ -94,6 +136,7 @@ class Kiosk_Form {
 	function input($name, $options=array()) {
 		$options += array(
 			'type' => 'text', 
+			'name' => $name, 
 			'value' => strval($this->value($name)), 
 		);
 		
@@ -115,6 +158,18 @@ class Kiosk_Form {
 	}
 	
 	function radio($name, $options=array()) {
+		$options += array(
+			'type' => 'radio', 
+			'name' => $name, 
+			'value' => 'on', 
+		);
+		
+		if ($this->value($name) == $options['value']) {
+			$options[] = 'checked';
+		}
+		
+		$str = $this->html->openTag('input', $options);
+		return $str;
 	}
 	
 	function select($name, $options=array()) {
@@ -130,6 +185,7 @@ class Kiosk_Form {
 class Kiosk_Form_Field {
 	var $name;
 	var $required = false;
+	var $array = false;
 	var $label = '';
 	var $initial = '';
 	var $help_text = '';
@@ -152,6 +208,14 @@ class Kiosk_Form_Field {
 		foreach ($def as $name => $value) {
 			$this->$name = $value;
 		}
+	}
+	
+	function initial() {
+		if ($this->array) {
+			return array();
+		}
+		
+		return $this->initial;
 	}
 	
 	function render(&$form) {

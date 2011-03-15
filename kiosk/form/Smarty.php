@@ -9,6 +9,7 @@ class Kiosk_Form_Smarty {
 		$functions = array(
 			'input', 
 			'hidden', 
+			'radio', 
 			'textarea', 
 		);
 		
@@ -56,6 +57,7 @@ class Kiosk_Form_Smarty {
 		
 		$params += array(
 			'type' => 'text', 
+			'name' => $name, 
 		);
 		
 		$str = $html->openTag('input', $params);
@@ -64,6 +66,19 @@ class Kiosk_Form_Smarty {
 	
 	function hidden($params, &$smarty) {
 		$params['type'] = 'hidden';
+		
+		return $this->input($params, $smarty);
+	}
+	
+	function radio($params, &$smarty) {
+		if ($this->current_form) {
+			$name = $this->_read($params, 'name');
+			if ($name) {
+				return $this->current_form->radio($name, $params);
+			}
+		}
+		
+		$params['type'] = 'radio';
 		
 		return $this->input($params, $smarty);
 	}
