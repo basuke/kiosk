@@ -183,5 +183,10 @@ class Kiosk_Data_DB_SQL_MySQL extends Kiosk_Data_DB_SQL {
 	function literalBool($value) {
 		return $value ? 1 : 0;
 	}
+	
+	function quoteName($word) {
+		return '`'. $this->escape($word). '`';
+	}
+	
 }
 

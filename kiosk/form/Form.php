@@ -57,7 +57,8 @@ class Kiosk_Form {
 	}
 	
 	function isValid() {
-		return empty($this->errors());
+		$errors = $this->errors();
+		return empty($errors);
 	}
 	
 	function errors() {
