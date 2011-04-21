@@ -38,6 +38,11 @@ class Kiosk_Form {
 		$this->fields[$name] = $field;
 	}
 	
+	function field($name) {
+		if (!isset($this->fields[$name])) return null;
+		return $this->fields[$name];
+	}
+	
 	// data handling ===========================
 	
 	function bind($data, $files=null) {
@@ -52,9 +57,13 @@ class Kiosk_Form {
 	}
 	
 	function isValid() {
+		return empty($this->errors());
 	}
 	
-	function initial($data = null) {
+	function errors() {
+	}
+	
+	function initial() {
 		$data = array();
 		
 		foreach ($this->fields as $field) {
@@ -62,6 +71,14 @@ class Kiosk_Form {
 		}
 		
 		return $data;
+	}
+	
+	function data() {
+		if ($this->isBound()) {
+			return $this->data;
+		}
+		
+		return $this->initial();
 	}
 	
 	function value($name) {
@@ -83,10 +100,15 @@ class Kiosk_Form {
 		
 		if (isset($this->data[$name])) {
 			$value = $this->data[$name];
-			
-			if ($key and is_array($value)) {
-				$value = $value[$key];
+		} else {
+			$field = $this->field($name);
+			if ($field) {
+				$value = $field->initial();
 			}
+		}
+		
+		if ($key and is_array($value)) {
+			$value = $value[$key];
 		}
 		
 		return $value;
@@ -112,73 +134,6 @@ class Kiosk_Form {
 		}
 		
 		return $value;
-	}
-	
-	// form html rendering =====================
-	
-	function start($name, $options=array()) {
-		$method = 'post';
-		
-		extract($options);
-		
-		$attributes = $options + array(
-			'name' => $name, 
-			'method' => 'post', 
-		);
-		
-		return $this->html->openTag('form', $attributes);
-	}
-	
-	function finish() {
-		return '</form>';
-	}
-	
-	function input($name, $options=array()) {
-		$options += array(
-			'type' => 'text', 
-			'name' => $name, 
-			'value' => strval($this->value($name)), 
-		);
-		
-		$str = $this->html->openTag('input', $options);
-		return $str;
-	}
-	
-	function password($name, $options=array()) {
-	}
-	
-	function hidden($name, $value=null, $options=array()) {
-	}
-	
-	function textarea($name, $options=array()) {
-		return '<textarea name="xxx"></textarea>';
-	}
-	
-	function checkbox($name, $options=array()) {
-	}
-	
-	function radio($name, $options=array()) {
-		$options += array(
-			'type' => 'radio', 
-			'name' => $name, 
-			'value' => 'on', 
-		);
-		
-		if ($this->value($name) == $options['value']) {
-			$options[] = 'checked';
-		}
-		
-		$str = $this->html->openTag('input', $options);
-		return $str;
-	}
-	
-	function select($name, $options=array()) {
-	}
-	
-	function option($value, $options=array()) {
-	}
-	
-	function submit($label, $options=array()) {
 	}
 }
 

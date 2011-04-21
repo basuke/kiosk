@@ -9,7 +9,9 @@ class Kiosk_Form_Smarty {
 		$functions = array(
 			'input', 
 			'hidden', 
+			'password', 
 			'radio', 
+			'submit', 
 			'textarea', 
 		);
 		
@@ -46,11 +48,10 @@ class Kiosk_Form_Smarty {
 	}
 	
 	function input($params, &$smarty) {
-		if ($this->current_form) {
-			$name = $this->_read($params, 'name');
-			if ($name) {
-				return $this->current_form->input($name, $params);
-			}
+		$name = $this->_read($params, 'name');
+		
+		if ($this->current_form and $name) {
+			return $this->current_form->input($name, $params);
 		}
 		
 		$html = Kiosk::util('HTML');
@@ -58,6 +59,7 @@ class Kiosk_Form_Smarty {
 		$params += array(
 			'type' => 'text', 
 			'name' => $name, 
+			'value' => $smarty->get_template_vars($name), 
 		);
 		
 		$str = $html->openTag('input', $params);
@@ -70,14 +72,37 @@ class Kiosk_Form_Smarty {
 		return $this->input($params, $smarty);
 	}
 	
+	function submit($params, &$smarty) {
+		$params['type'] = 'submit';
+		
+		return $this->input($params, $smarty);
+	}
+	
+	function password($params, &$smarty) {
+		$params['type'] = 'password';
+		
+		if (isset($params['name'])) {
+			$smarty->assign($params['name'], '');
+		}
+		
+		return $this->input($params, $smarty);
+	}
+	
 	function radio($params, &$smarty) {
-		if ($this->current_form) {
-			$name = $this->_read($params, 'name');
-			if ($name) {
-				return $this->current_form->radio($name, $params);
+		$name = $this->_read($params, 'name');
+		
+		if ($this->current_form and $name) {
+			return $this->current_form->radio($name, $params);
+		}
+		
+		if (isset($params['value'])) {
+			$current = $smarty->get_template_vars($name);
+			if ($current == $params['value']) {
+				$params['checked'] = true;
 			}
 		}
 		
+		$params['name'] = $name;
 		$params['type'] = 'radio';
 		
 		return $this->input($params, $smarty);
@@ -86,8 +111,16 @@ class Kiosk_Form_Smarty {
 	function textarea($params, &$smarty) {
 		$html = Kiosk::util('HTML');
 		
+		if (isset($params['name'])) {
+			$value = $smarty->get_template_vars($name);
+		} else if (isset($params['value'])) {
+			$value = $params['value'];
+		} else {
+			$value = '';
+		}
+		
 		$str = $html->openTag('textarea', $params);
-		$str .= $html->h('');
+		$str .= $html->h($value);
 		$str .= $html->closeTag('textarea');
 		return $str;
 	}

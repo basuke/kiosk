@@ -15,6 +15,10 @@ class Kiosk_Utils_HTML {
 			
 			if (is_integer($name)) {
 				$tag .= ' '. $value;
+			} else if ($value === true) {
+				$tag .= ' '. $this->q($name);
+			} else if ($value === false) {
+				//
 			} else {
 				$tag .= ' '. $this->q($name). '='. $value;
 			}
@@ -30,7 +34,7 @@ class Kiosk_Utils_HTML {
 	}
 	
 	function q($str) {
-		$str = htmlspecialchars($str);
+		$str = htmlspecialchars(strval($str));
 		if (! preg_match('/^[a-zA-Z0-9_]+$/', $str)) {
 			$str = '"'. $str. '"';
 		}
@@ -38,6 +42,6 @@ class Kiosk_Utils_HTML {
 	}
 	
 	function h($str) {
-		return htmlspecialchars($str);
+		return htmlspecialchars(strval($str));
 	}
 }
