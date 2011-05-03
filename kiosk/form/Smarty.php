@@ -112,7 +112,7 @@ class Kiosk_Form_Smarty {
 		$html = Kiosk::util('HTML');
 		
 		if (isset($params['name'])) {
-			$value = $smarty->get_template_vars($name);
+			$value = $smarty->get_template_vars($params['name']);
 		} else if (isset($params['value'])) {
 			$value = $params['value'];
 		} else {
