@@ -10,6 +10,7 @@ require_once KIOSK_LIB_DIR. '/app/Router.php';
 require_once KIOSK_LIB_DIR. '/Logger.php';
 require_once KIOSK_LIB_DIR. '/app/renderers/HTML.php';
 require_once KIOSK_LIB_DIR. '/app/renderers/JSON.php';
+require_once KIOSK_LIB_DIR. '/app/renderers/JavaScript.php';
 
 class Kiosk_App_App {
 	var $_router;
@@ -31,6 +32,7 @@ class Kiosk_App_App {
 		
 		$this->registerRenderer(new Kiosk_App_HTMLRenderer(), 'html');
 		$this->registerRenderer(new Kiosk_App_JSONRenderer(), 'json');
+		$this->registerRenderer(new Kiosk_App_JavaScriptRenderer(), 'js');
 	}
 	
 	// Logger ==================================

@@ -3,8 +3,12 @@
 // PHP 5用のKioskの実態
 
 class Kiosk_Object_CRUD_Concrete extends Kiosk_Object_CRUD {
-	static public function bind(&$db, $desc = array()) {
+	static public function bind($source, $desc = array()) {
 		$class = get_called_class();
+		
+		if (is_string($source)) {
+			$source = Kiosk_data()->source($source);
+		}
 		
 		if (Kiosk_isClass($class, 'Kiosk')) {
 			$descs = func_get_args();
@@ -16,10 +20,10 @@ class Kiosk_Object_CRUD_Concrete extends Kiosk_Object_CRUD {
 					return trigger_error(KIOSK_ERROR_CONFIG. "no class specified");
 				}
 				
-				Kiosk_bind($class, $db, $desc);
+				Kiosk_bind($class, $source, $desc);
 			}
 		} else {
-			Kiosk_bind($class, $db, $desc);
+			Kiosk_bind($class, $source, $desc);
 		}
 	}
 	

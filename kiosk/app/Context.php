@@ -48,6 +48,41 @@ class Kiosk_App_Context {
 		return ($this->isPOST() ? $_POST : $_GET);
 	}
 	
+	/**
+	 *	$this->paramsから指定の値を読み取ってハッシュで返す。
+	 *	定義されていなければnullを設定する
+	 *	$namesにハッシュを渡せば、$paramsから読み取る変数名と
+	 *	定義されるハッシュのキーを変えることが出来る
+	 *	
+	 *	$params = $this->params('url', array(
+	 *				'foo', 				// 'foo' => $this->params['url']['foo']
+	 *				'hoge' => 'bar', 	// 'bar' => $this->params['url']['hoge']
+	 *				...
+	 *	));
+	 *
+	 *	@param $kind $this->params[$kind][...] の指定
+	 *	@return 指定の名前のキーを持つハッシュ
+	 *	@access protected
+	 */
+	function collect($data, $names /* , $name2, $name3, ... */) {
+		if (!is_array($names)) {
+			$names = func_get_args();
+			array_shift($names);
+		}
+		
+		$result = array();
+		
+		foreach ($names as $name => $var_name) {
+			if (is_integer($name)) {
+				$name = $var_name;
+			}
+			
+			$result[$var_name] = isset($data[$name]) ? $data[$name] : null;
+		}
+		
+		return $result;
+	}
+	
 	// Result
 	
 	function routeResult() {
