@@ -11,8 +11,10 @@ class Kiosk_Form_Smarty {
 			'hidden', 
 			'password', 
 			'radio', 
+			'checkbox', 
 			'submit', 
 			'textarea', 
+			'select', 
 		);
 		
 		foreach ($functions as $name) {
@@ -33,26 +35,20 @@ class Kiosk_Form_Smarty {
 		$str = '';
 		
 		if ($form) {
-			$name = $this->_read($params, 'name', 'unknown');
-			
 			assert('is_a($form, "Kiosk_Form")');
 			
-			$str = $form->start($name, $params);
-		} else {
-			$str = $html->openTag('form', $params);
+			$params += array(
+				'name' => $form->name, 
+				'method' => $form->method, 
+				'action' => $form->action, 
+			);
 		}
 		
-		$str .= $content. $html->closeTag('form');
-		
-		return $str;
+		return $html->tag('form', $params, $content);
 	}
 	
 	function input($params, &$smarty) {
 		$name = $this->_read($params, 'name');
-		
-		if ($this->current_form and $name) {
-			return $this->current_form->input($name, $params);
-		}
 		
 		$html = Kiosk::util('HTML');
 		
@@ -91,10 +87,6 @@ class Kiosk_Form_Smarty {
 	function radio($params, &$smarty) {
 		$name = $this->_read($params, 'name');
 		
-		if ($this->current_form and $name) {
-			return $this->current_form->radio($name, $params);
-		}
-		
 		if (isset($params['value'])) {
 			$current = $smarty->get_template_vars($name);
 			if ($current == $params['value']) {
@@ -104,6 +96,29 @@ class Kiosk_Form_Smarty {
 		
 		$params['name'] = $name;
 		$params['type'] = 'radio';
+		
+		return $this->input($params, $smarty);
+	}
+	
+	function checkbox($params, &$smarty) {
+		$name = $this->_read($params, 'name');
+		
+		$checked = false;
+		
+		$current = $smarty->get_template_vars($name);
+		if (is_bool($current)) {
+			$checked = $current;
+		} else if (isset($params['value']) and $current == $params['value']) {
+			$checked = true;
+		}
+		
+		$params['name'] = $name;
+		$params['type'] = 'checkbox';
+		if ($checked) {
+			$params['checked'] = true;
+		} else {
+			unset($params['checked']);
+		}
 		
 		return $this->input($params, $smarty);
 	}
@@ -119,9 +134,41 @@ class Kiosk_Form_Smarty {
 			$value = '';
 		}
 		
-		$str = $html->openTag('textarea', $params);
-		$str .= $html->h($value);
-		$str .= $html->closeTag('textarea');
+		return $html->tag('textarea', $params, $html->h($value));
+	}
+	
+	function select($params, &$smarty) {
+		$html = Kiosk::util('HTML');
+		
+		if (isset($params['name'])) {
+			$current = $smarty->get_template_vars($params['name']);
+		} else {
+			$current = null;
+		}
+		
+		$unselected = $this->_read($params, 'unselected');
+		$options = $this->_read($params, 'options');
+		
+		$str = $html->openTag('select', $params);
+		
+		if ($unselected) {
+			$str .= $html->tag('option', array('value' => ''), $html->h($unselected));
+		}
+		
+		if ($options) {
+			foreach ((array) $options as $index=>$label) {
+				$value = (is_integer($index) ? $label : $index);
+				
+				$opt_params = array('value' => $value);
+				if ($value == $current) {
+					$opt_params['selected'] = true;
+				}
+				
+				$str .= $html->tag('option', $opt_params, $html->h($label));
+			}
+		}
+		
+		$str .= $html->closeTag('select');
 		return $str;
 	}
 	

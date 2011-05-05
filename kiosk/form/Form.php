@@ -1,10 +1,12 @@
 <?php
 
 class Kiosk_Form {
+	var $name = 'form';
+	var $action = '';
+	var $method = 'POST';
 	var $errors = array();
 	var $data = null;
 	var $files = null;
-	var $html = null;
 	
 	// フィールドの定義
 	var $fields = array();
@@ -15,8 +17,6 @@ class Kiosk_Form {
 	
 	function __construct($fields=array()) {
 		assert('is_array($fields)');
-		
-		$this->html = Kiosk::util('HTML');
 		
 		foreach ($fields as $name => $def) {
 			$this->addField($name, $def);

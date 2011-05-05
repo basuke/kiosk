@@ -33,6 +33,10 @@ class Kiosk_Utils_HTML {
 		return '</'. $tag. '>';
 	}
 	
+	function tag($tag, $attributes, $contents) {
+		return $this->openTag($tag, $attributes). $contents. $this->closeTag($tag);
+	}
+	
 	function q($str) {
 		$str = htmlspecialchars(strval($str));
 		if (! preg_match('/^[a-zA-Z0-9_]+$/', $str)) {
