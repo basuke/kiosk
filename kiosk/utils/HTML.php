@@ -11,16 +11,14 @@ class Kiosk_Utils_HTML {
 		$tag = '<'. $tag;
 		
 		foreach ($attributes as $name=>$value) {
-			$value = $this->q($value);
-			
 			if (is_integer($name)) {
-				$tag .= ' '. $value;
+				$tag .= ' '. $this->q($value);
 			} else if ($value === true) {
 				$tag .= ' '. $this->q($name);
 			} else if ($value === false) {
 				//
 			} else {
-				$tag .= ' '. $this->q($name). '='. $value;
+				$tag .= ' '. $this->q($name). '='. $this->q($value);
 			}
 		}
 		

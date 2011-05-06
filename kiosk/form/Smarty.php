@@ -23,7 +23,14 @@ class Kiosk_Form_Smarty {
 	}
 	
 	function form($params, $content, &$smarty, &$repeat) {
-		$form = $this->_read($params, 'with');
+		if (isset($params['with'])) {
+			$form = $this->_read($params, 'with');
+			if (!is_a($form, "Kiosk_Form")) {
+				trigger_error(KIOSK_ERROR_RUNTIME. "The object pass from 'with' parameter is not a subclass of Kiosk_Form.");
+			}
+		} else {
+			$form = null;
+		}
 		
 		if (is_null($content)) {
 			$this->current_form = $form;
@@ -32,11 +39,7 @@ class Kiosk_Form_Smarty {
 		
 		$html = Kiosk::util('HTML');
 		
-		$str = '';
-		
 		if ($form) {
-			assert('is_a($form, "Kiosk_Form")');
-			
 			$params += array(
 				'name' => $form->name, 
 				'method' => $form->method, 
@@ -47,19 +50,36 @@ class Kiosk_Form_Smarty {
 		return $html->tag('form', $params, $content);
 	}
 	
-	function input($params, &$smarty) {
+	function _nameAndValue($smarty, &$params) {
 		$name = $this->_read($params, 'name');
+		
+		if ($this->current_form) {
+			$form = $this->current_form;
+			
+			$value = $form->value($name);
+			
+			$name = $form->name. '_'. $name;
+		} else {
+			$value = $smarty->get_template_vars($name);
+		}
+		
+		if (is_null($value)) $value = '';
+		
+		return array($name, $value);
+	}
+	
+	function input($params, &$smarty) {
+		list($name, $value) = $this->_nameAndValue($smarty, $params);
 		
 		$html = Kiosk::util('HTML');
 		
 		$params += array(
 			'type' => 'text', 
 			'name' => $name, 
-			'value' => $smarty->get_template_vars($name), 
+			'value' => $value, 
 		);
 		
-		$str = $html->openTag('input', $params);
-		return $str;
+		return $html->openTag('input', $params);
 	}
 	
 	function hidden($params, &$smarty) {
@@ -76,19 +96,15 @@ class Kiosk_Form_Smarty {
 	
 	function password($params, &$smarty) {
 		$params['type'] = 'password';
-		
-		if (isset($params['name'])) {
-			$smarty->assign($params['name'], '');
-		}
+		$params['value'] = '';
 		
 		return $this->input($params, $smarty);
 	}
 	
 	function radio($params, &$smarty) {
-		$name = $this->_read($params, 'name');
+		list($name, $current) = $this->_nameAndValue($smarty, $params);
 		
 		if (isset($params['value'])) {
-			$current = $smarty->get_template_vars($name);
 			if ($current == $params['value']) {
 				$params['checked'] = true;
 			}
@@ -97,15 +113,15 @@ class Kiosk_Form_Smarty {
 		$params['name'] = $name;
 		$params['type'] = 'radio';
 		
-		return $this->input($params, $smarty);
+		$html = Kiosk::util('HTML');
+		return $html->openTag('input', $params);
 	}
 	
 	function checkbox($params, &$smarty) {
-		$name = $this->_read($params, 'name');
+		list($name, $current) = $this->_nameAndValue($smarty, $params);
 		
 		$checked = false;
 		
-		$current = $smarty->get_template_vars($name);
 		if (is_bool($current)) {
 			$checked = $current;
 		} else if (isset($params['value']) and $current == $params['value']) {
@@ -114,40 +130,31 @@ class Kiosk_Form_Smarty {
 		
 		$params['name'] = $name;
 		$params['type'] = 'checkbox';
-		if ($checked) {
-			$params['checked'] = true;
-		} else {
-			unset($params['checked']);
-		}
+		$params['checked'] = $checked;
 		
-		return $this->input($params, $smarty);
+		$html = Kiosk::util('HTML');
+		return $html->openTag('input', $params);
 	}
 	
 	function textarea($params, &$smarty) {
+		list($name, $value) = $this->_nameAndValue($smarty, $params);
+		
 		$html = Kiosk::util('HTML');
 		
-		if (isset($params['name'])) {
-			$value = $smarty->get_template_vars($params['name']);
-		} else if (isset($params['value'])) {
-			$value = $params['value'];
-		} else {
-			$value = '';
-		}
+		$params['name'] = $name;
 		
 		return $html->tag('textarea', $params, $html->h($value));
 	}
 	
 	function select($params, &$smarty) {
-		$html = Kiosk::util('HTML');
+		list($name, $current) = $this->_nameAndValue($smarty, $params);
 		
-		if (isset($params['name'])) {
-			$current = $smarty->get_template_vars($params['name']);
-		} else {
-			$current = null;
-		}
+		$html = Kiosk::util('HTML');
 		
 		$unselected = $this->_read($params, 'unselected');
 		$options = $this->_read($params, 'options');
+		
+		$params['name'] = $name;
 		
 		$str = $html->openTag('select', $params);
 		
