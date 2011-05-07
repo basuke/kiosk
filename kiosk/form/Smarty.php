@@ -24,10 +24,13 @@ class Kiosk_Form_Smarty {
 	
 	function form($params, $content, &$smarty, &$repeat) {
 		if (isset($params['with'])) {
-			$form = $this->_read($params, 'with');
+			$form = $params['with'];
+			
 			if (!is_a($form, "Kiosk_Form")) {
 				trigger_error(KIOSK_ERROR_RUNTIME. "The object pass from 'with' parameter is not a subclass of Kiosk_Form.");
 			}
+			
+			unset($params['with']);
 		} else {
 			$form = null;
 		}
@@ -50,36 +53,13 @@ class Kiosk_Form_Smarty {
 		return $html->tag('form', $params, $content);
 	}
 	
-	function _nameAndValue($smarty, &$params) {
-		$name = $this->_read($params, 'name');
-		
-		if ($this->current_form) {
-			$form = $this->current_form;
-			
-			$value = $form->value($name);
-			
-			$name = $form->name. '_'. $name;
-		} else {
-			$value = $smarty->get_template_vars($name);
-		}
-		
-		if (is_null($value)) $value = '';
-		
-		return array($name, $value);
-	}
-	
 	function input($params, &$smarty) {
-		list($name, $value) = $this->_nameAndValue($smarty, $params);
+		$reader =& $this->reader($params, $smarty);
 		
 		$html = Kiosk::util('HTML');
-		
-		$params += array(
-			'type' => 'text', 
-			'name' => $name, 
-			'value' => $value, 
-		);
-		
-		return $html->openTag('input', $params);
+		return $html->openTag(
+				'input', 
+				$reader->params(array('value' => $reader->value(), 'type' => 'text')));
 	}
 	
 	function hidden($params, &$smarty) {
@@ -102,25 +82,30 @@ class Kiosk_Form_Smarty {
 	}
 	
 	function radio($params, &$smarty) {
-		list($name, $current) = $this->_nameAndValue($smarty, $params);
-		
-		if (isset($params['value'])) {
-			if ($current == $params['value']) {
-				$params['checked'] = true;
-			}
-		}
-		
-		$params['name'] = $name;
 		$params['type'] = 'radio';
 		
+		$reader =& $this->reader($params, $smarty);
+		$name = $reader->name();
+		$current = $reader->value();
+		
+		$checked = $reader->readAndClear('checked');
+		
+		if (isset($params['value'])) {
+			$checked = ($current == $params['value']);
+		}
+		
 		$html = Kiosk::util('HTML');
-		return $html->openTag('input', $params);
+		return $html->openTag('input', $reader->params(compact('checked')));
 	}
 	
 	function checkbox($params, &$smarty) {
-		list($name, $current) = $this->_nameAndValue($smarty, $params);
+		$params['type'] = 'checkbox';
 		
-		$checked = false;
+		$reader =& $this->reader($params, $smarty);
+		$name = $reader->name();
+		$current = $reader->value();
+		
+		$checked = $reader->readAndClear('checked');
 		
 		if (is_bool($current)) {
 			$checked = $current;
@@ -128,35 +113,34 @@ class Kiosk_Form_Smarty {
 			$checked = true;
 		}
 		
-		$params['name'] = $name;
-		$params['type'] = 'checkbox';
-		$params['checked'] = $checked;
-		
 		$html = Kiosk::util('HTML');
-		return $html->openTag('input', $params);
+		return $html->openTag('input', $reader->params(compact('checked')));
 	}
 	
 	function textarea($params, &$smarty) {
-		list($name, $value) = $this->_nameAndValue($smarty, $params);
+		$reader =& $this->reader($params, $smarty);
 		
 		$html = Kiosk::util('HTML');
-		
-		$params['name'] = $name;
-		
-		return $html->tag('textarea', $params, $html->h($value));
+		return $html->tag('textarea', $reader->params(), $html->h($reader->value()));
 	}
 	
 	function select($params, &$smarty) {
-		list($name, $current) = $this->_nameAndValue($smarty, $params);
+		$reader =& $this->reader($params, $smarty);
+		$name = $reader->name();
+		$current = $reader->value();
+		
+		$unselected = $reader->readAndClear('unselected');
+		if (is_null($unselected)) {
+			$unselected = $reader->fieldAttribute('unselected');
+		}
+		
+		$options = $reader->readAndClear('options');
+		if (is_null($options)) {
+			$options = $reader->fieldAttribute('choices');
+		}
 		
 		$html = Kiosk::util('HTML');
-		
-		$unselected = $this->_read($params, 'unselected');
-		$options = $this->_read($params, 'options');
-		
-		$params['name'] = $name;
-		
-		$str = $html->openTag('select', $params);
+		$str = $html->openTag('select', $reader->params());
 		
 		if ($unselected) {
 			$str .= $html->tag('option', array('value' => ''), $html->h($unselected));
@@ -179,13 +163,75 @@ class Kiosk_Form_Smarty {
 		return $str;
 	}
 	
-	function _read(&$params, $name, $value = null) {
-		if (isset($params[$name])) {
-			$value = $params[$name];
-			unset($params[$name]);
+	function &reader(&$params, &$smarty) {
+		$reader = new Kiosk_Form_Smarty_ParamReader();
+		
+		$reader->params = $params;
+		$reader->smarty =& $smarty;
+		$reader->form =& $this->current_form;
+		
+		// エラーを起こすなら最初に
+		$reader->name();
+		
+		return $reader;
+	}
+}
+
+class Kiosk_Form_Smarty_ParamReader {
+	var $params;
+	var $smarty;
+	var $form;
+	
+	function name() {
+		if (!isset($this->params['name'])) {
+			trigger_error(KIOSK_ERROR_RUNTIME. "The tag has no name attribute.");
+		}
+		
+		$name = $this->params['name'];
+		
+		if ($this->form) {
+			$name = $this->form->name. '_'. $name;
+		}
+		
+		return $name;
+	}
+	
+	function value() {
+		$name = $this->params['name'];
+		
+		if ($this->form) {
+			$value = $this->form->value($name);
+		} else {
+			$value = $smarty->get_template_vars($name);
+		}
+		
+		if (is_null($value)) $value = '';
+		
+		return $value;
+	}
+	
+	function fieldAttribute($attr) {
+		if ($this->form == null) return null;
+		
+		$name = $this->params['name'];
+		
+		$field =& $this->form->field($name);
+		if ($field == null) return null;
+		
+		return isset($field->{$attr}) ? $field->{$attr} : null;
+	}
+	
+	function readAndClear($name, $value = null) {
+		if (isset($this->params[$name])) {
+			$value = $this->params[$name];
+			unset($this->params[$name]);
 		}
 		
 		return $value;
+	}
+	
+	function params($more = array()) {
+		return array('name' => $this->name()) + $this->params + $more;
 	}
 }
 
