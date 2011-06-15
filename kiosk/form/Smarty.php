@@ -76,7 +76,7 @@ class Kiosk_Form_Smarty {
 	
 	function password($params, &$smarty) {
 		$params['type'] = 'password';
-		$params['value'] = '';
+//		$params['value'] = '';
 		
 		return $this->input($params, $smarty);
 	}

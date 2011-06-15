@@ -105,6 +105,22 @@ class Kiosk_Form {
 		return $this->initial();
 	}
 	
+	public function displayData() {
+		$data = $this->data();
+		
+		foreach (array_keys($this->fields) as $name) {
+			if (!isset($data[$name])) continue;
+			
+			$value = $data[$name];
+			
+			if (isset($this->fields[$name]->choices[$value])) {
+				$data[$name] = $this->fields[$name]->choices[$value];
+			}
+		}
+		
+		return $data;
+	}
+	
 	function value($name) {
 		$key = null;
 		
@@ -121,11 +137,11 @@ class Kiosk_Form {
 		}
 		
 		$value = null;
+		$initial = $this->initial();
 		
-		if (isset($this->data[$name])) {
+		if ($this->data and array_key_exists($name, $this->data)) {
 			$value = $this->data[$name];
 		} else {
-			$initial = $this->initial();
 			if (isset($initial[$name])) {
 				$value = $initial[$name];
 			}
