@@ -47,5 +47,16 @@ class Kiosk_Data_Source {
 	function &buildSchema($class, $params) {
 		return new Kiosk_Data_Schema($class, $this, $params);
 	}
+	
+	// transaction
+	
+	function begin() {
+	}
+	
+	function commit() {
+	}
+	
+	function rollback() {
+	}
 }
 

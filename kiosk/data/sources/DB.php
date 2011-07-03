@@ -195,5 +195,19 @@ class Kiosk_Data_Source_DB extends Kiosk_Data_Source {
 		
 		return $this->tables[$name];
 	}
+	
+	// transaction
+	
+	function begin() {
+		return $this->exec('BEGIN');
+	}
+	
+	function commit() {
+		return $this->exec('COMMIT');
+	}
+	
+	function rollback() {
+		return $this->exec('ROLLBACK');
+	}
 }
 

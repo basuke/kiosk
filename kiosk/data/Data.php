@@ -38,6 +38,10 @@ class Kiosk_Data {
 			'return Kiosk_find(CLASS, $query);');
 		
 		$this->defineFunction(
+			$class, 'count', '$query=array()', 
+			'return Kiosk_count(CLASS, $query);');
+		
+		$this->defineFunction(
 			$class, 'query', '$params=array()', 
 			'return Kiosk_query(CLASS, $params);');
 	}

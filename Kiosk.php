@@ -31,7 +31,11 @@ class Kiosk extends KioskObject {
 	
 	/*
 	*/
-	function &source($name, $value = null) {
+	function &source($name = null, $value = null) {
+		if (is_null($name)) {
+			$name = 'default';
+		}
+		
 		$data =& Kiosk_data();
 		return $data->source($name, $value);
 	}
