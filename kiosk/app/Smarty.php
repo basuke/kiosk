@@ -19,6 +19,14 @@ class Kiosk_App_Smarty extends Smarty {
 		
 		$this->caching = false;
 		
+		$this->assign('env', array(
+			'GET' => $_GET,
+			'POST' => $_POST,
+			'COOKIE' => $_COOKIE,
+			'SESSION' => $_SESSION,
+			'SERVER' => $_SERVER,
+		));
+		
 		if (DEVELOPMENT) {
 			$this->assign('debug', Debug::getInstance());
 		}
